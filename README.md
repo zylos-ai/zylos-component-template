@@ -13,8 +13,15 @@
 ### 手动开发
 
 ```bash
-git clone https://github.com/zylos-ai/zylos-component-template.git zylos-mycomponent
+git clone https://github.com/zylos-ai/zylos-component-template.git temp
+cp -r temp/template zylos-mycomponent
+rm -rf temp
 cd zylos-mycomponent
+# 手动替换 {{COMPONENT_NAME}} 等占位符
+```
+
+或使用初始化脚本：
+```bash
 ./init.sh mycomponent "组件描述" communication
 ```
 
@@ -26,28 +33,23 @@ cd zylos-mycomponent
 | `capability` | 能力组件 | browser, knowledge-base |
 | `utility` | 工具组件 | 辅助工具 |
 
-## 模板文件
+## 项目结构
 
 ```
-├── SKILL.md.template         # 组件元数据
-├── README.md.template        # 用户文档
-├── CHANGELOG.md.template     # 版本历史
-├── package.json.template     # npm 配置
-├── ecosystem.config.js.template  # PM2 配置
-├── send.js.template          # C4 接口 (仅 communication)
-├── hooks/
-│   ├── post-install.js.template  # 安装钩子
-│   └── post-upgrade.js.template  # 升级钩子
-└── src/
-    ├── index.js.template     # 主入口
-    └── lib/
-        └── config.js.template    # 配置加载
+├── CLAUDE.md             # AI 开发指南
+├── README.md             # 本文件
+├── COMPONENT-SPEC.md     # 完整开发规范
+├── init.sh               # 手动初始化脚本
+└── template/             # 组件模板文件
+    ├── SKILL.md
+    ├── README.md
+    ├── CHANGELOG.md
+    ├── package.json
+    ├── ecosystem.config.js
+    ├── send.js
+    ├── hooks/
+    └── src/
 ```
-
-## 文档
-
-- [CLAUDE.md](./CLAUDE.md) - AI 开发指南
-- [COMPONENT-SPEC.md](./COMPONENT-SPEC.md) - 完整开发规范
 
 ## 参考实现
 

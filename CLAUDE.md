@@ -6,13 +6,14 @@
 
 当用户要求创建新组件时，按以下步骤执行：
 
-### 步骤 1: 克隆模板
+### 步骤 1: 复制模板
 
 ```bash
 cd ~/src
-git clone https://github.com/zylos-ai/zylos-component-template.git zylos-<name>
+git clone https://github.com/zylos-ai/zylos-component-template.git temp-clone
+cp -r temp-clone/template zylos-<name>
+rm -rf temp-clone
 cd zylos-<name>
-rm -rf .git
 ```
 
 ### 步骤 2: 确定组件信息
@@ -24,7 +25,7 @@ rm -rf .git
 
 ### 步骤 3: 替换占位符
 
-在所有 `.template` 文件中替换：
+在所有文件中替换：
 
 | 占位符 | 替换为 | 示例 |
 |--------|--------|------|
@@ -35,31 +36,14 @@ rm -rf .git
 | `{{COMPONENT_TYPE}}` | 组件类型 | `communication` |
 | `{{DATE}}` | 当前日期 | `2026-02-04` |
 
-### 步骤 4: 重命名文件
+### 步骤 4: 处理组件类型
 
-```
-SKILL.md.template      → SKILL.md
-README.md.template     → README.md
-CHANGELOG.md.template  → CHANGELOG.md
-package.json.template  → package.json
-ecosystem.config.js.template → ecosystem.config.js
-hooks/post-install.js.template → hooks/post-install.js
-hooks/post-upgrade.js.template → hooks/post-upgrade.js
-src/index.js.template  → src/index.js
-src/lib/config.js.template → src/lib/config.js
-send.js.template       → send.js (仅 communication 类型)
-```
-
-### 步骤 5: 清理模板文件
-
+如果不是 `communication` 类型，删除 send.js：
 ```bash
-rm -f CLAUDE.md COMPONENT-SPEC.md init.sh
-rm -f *.template hooks/*.template src/*.template src/lib/*.template
-# 如果不是 communication 类型
 rm -f send.js
 ```
 
-### 步骤 6: 实现组件逻辑
+### 步骤 5: 实现组件逻辑
 
 根据组件类型，实现核心逻辑：
 
@@ -73,7 +57,7 @@ rm -f send.js
 **utility 类型**:
 - `src/index.js` - 工具逻辑 (可能不需要常驻服务)
 
-### 步骤 7: 初始化 Git
+### 步骤 6: 初始化 Git
 
 ```bash
 git init
@@ -83,20 +67,24 @@ git remote add origin git@github.com:zylos-ai/zylos-<name>.git
 git push -u origin main
 ```
 
-## 文件说明
+## 模板文件结构
 
-| 文件 | 用途 | 必须 |
-|------|------|------|
-| `SKILL.md` | 组件元数据，zylos CLI 读取 | 是 |
-| `README.md` | 用户文档 | 是 |
-| `CHANGELOG.md` | 版本历史 | 是 |
-| `package.json` | npm 依赖 | 是 |
-| `ecosystem.config.js` | PM2 配置 | 是 |
-| `hooks/post-install.js` | 安装后钩子 | 是 |
-| `hooks/post-upgrade.js` | 升级后钩子 | 是 |
-| `src/index.js` | 主入口 | 是 |
-| `src/lib/config.js` | 配置加载 | 是 |
-| `send.js` | C4 发送接口 | 仅 communication |
+```
+template/
+├── SKILL.md              # 组件元数据，zylos CLI 读取
+├── README.md             # 用户文档
+├── CHANGELOG.md          # 版本历史
+├── package.json          # npm 依赖
+├── ecosystem.config.js   # PM2 配置
+├── send.js               # C4 发送接口 (仅 communication)
+├── hooks/
+│   ├── post-install.js   # 安装后钩子
+│   └── post-upgrade.js   # 升级后钩子
+└── src/
+    ├── index.js          # 主入口
+    └── lib/
+        └── config.js     # 配置加载
+```
 
 ## 目录规范
 
