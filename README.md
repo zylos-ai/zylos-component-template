@@ -51,6 +51,9 @@ cd zylos-component-template
     ├── ecosystem.config.js
     ├── send.js
     ├── hooks/
+    │   ├── post-install.js
+    │   ├── pre-upgrade.js
+    │   └── post-upgrade.js
     └── src/
 ```
 

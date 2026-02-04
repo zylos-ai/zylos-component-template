@@ -8,6 +8,12 @@
 
 ### 步骤 1: 复制模板
 
+**快捷命令 (推荐):**
+```bash
+cd ~/src && git clone https://github.com/zylos-ai/zylos-component-template.git temp-clone && cp -r temp-clone/template zylos-<name> && rm -rf temp-clone && cd zylos-<name>
+```
+
+**或分步执行:**
 ```bash
 cd ~/src
 git clone https://github.com/zylos-ai/zylos-component-template.git temp-clone
@@ -79,6 +85,7 @@ template/
 ├── send.js               # C4 发送接口 (仅 communication)
 ├── hooks/
 │   ├── post-install.js   # 安装后钩子
+│   ├── pre-upgrade.js    # 升级前钩子
 │   └── post-upgrade.js   # 升级后钩子
 └── src/
     ├── index.js          # 主入口
