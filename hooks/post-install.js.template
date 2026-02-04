@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+/**
+ * Post-install hook for zylos-{{COMPONENT_NAME}}
+ *
+ * Called by zylos CLI after standard installation steps:
+ * - git clone
+ * - npm install
+ * - create data_dir
+ * - register PM2 service (basic)
+ *
+ * This hook handles component-specific setup:
+ * - Create subdirectories
+ * - Create default config.json
+ * - Check for required environment variables
+ * - Configure PM2 with ecosystem.config.js
+ */
+
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
+const HOME = process.env.HOME;
+const SKILL_DIR = path.dirname(__dirname);
+const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');
+const ENV_FILE = path.join(HOME, 'zylos/.env');
+
+const DEFAULT_CONFIG = {
+  enabled: true,
+  // Add your default config fields here
+  settings: {}
+};
+
+console.log('[post-install] Running {{COMPONENT_NAME}}-specific setup...\n');
+
+// 1. Create subdirectories
+console.log('Creating subdirectories...');
+fs.mkdirSync(path.join(DATA_DIR, 'logs'), { recursive: true });
+// Add more subdirectories as needed
+// fs.mkdirSync(path.join(DATA_DIR, 'media'), { recursive: true });
+console.log('  - logs/');
+
+// 2. Create default config if not exists
+const configPath = path.join(DATA_DIR, 'config.json');
+if (!fs.existsSync(configPath)) {
+  console.log('\nCreating default config.json...');
+  fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
+  console.log('  - config.json created');
+} else {
+  console.log('\nConfig already exists, skipping.');
+}
+
+// 3. Check environment variables (customize as needed)
+console.log('\nChecking environment variables...');
+let envContent = '';
+try {
+  envContent = fs.readFileSync(ENV_FILE, 'utf8');
+} catch (e) {
+  // .env file doesn't exist yet
+}
+
+// Example: Check for required API key
+// const hasApiKey = envContent.includes('{{COMPONENT_NAME_UPPER}}_API_KEY');
+// if (!hasApiKey) {
+//   console.log('\n[!] {{COMPONENT_NAME_UPPER}}_API_KEY not found in ' + ENV_FILE);
+// }
+
+// 4. Configure PM2 with ecosystem.config.js
+console.log('\nConfiguring PM2 service...');
+const ecosystemPath = path.join(SKILL_DIR, 'ecosystem.config.js');
+if (fs.existsSync(ecosystemPath)) {
+  try {
+    execSync('pm2 delete zylos-{{COMPONENT_NAME}} 2>/dev/null || true', { stdio: 'pipe' });
+    execSync(`pm2 start "${ecosystemPath}"`, { stdio: 'inherit' });
+    execSync('pm2 save', { stdio: 'pipe' });
+    console.log('  - Service configured');
+  } catch (err) {
+    console.error('  - PM2 configuration failed:', err.message);
+  }
+}
+
+console.log('\n[post-install] Complete!');

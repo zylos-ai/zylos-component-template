@@ -1,0 +1,57 @@
+# zylos-{{COMPONENT_NAME}}
+
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/zylos-ai/zylos-{{COMPONENT_NAME}}/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+
+{{COMPONENT_DESCRIPTION}}
+
+## Features
+
+- Feature 1
+- Feature 2
+- Feature 3
+
+## Getting Started
+
+Tell your Zylos agent:
+
+> "Install the {{COMPONENT_NAME}} component"
+
+Zylos will guide you through the setup process.
+
+## Managing the Component
+
+Just tell your Zylos agent what you need:
+
+| Task | Example |
+|------|---------|
+| Check status | "Show {{COMPONENT_NAME}} status" |
+| View logs | "Show {{COMPONENT_NAME}} logs" |
+| Restart | "Restart {{COMPONENT_NAME}}" |
+
+## Troubleshooting
+
+Just ask Zylos:
+
+> "Check {{COMPONENT_NAME}} status"
+
+> "Show {{COMPONENT_NAME}} logs"
+
+## Documentation
+
+- [DESIGN.md](./DESIGN.md) - Technical design document
+- [CHANGELOG.md](./CHANGELOG.md) - Version history
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Submit a Pull Request
+
+## License
+
+[MIT](./LICENSE)
+
+---
+
+Made with Claude by [Zylos AI](https://github.com/zylos-ai)

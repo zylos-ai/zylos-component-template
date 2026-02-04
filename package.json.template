@@ -1,0 +1,24 @@
+{
+  "name": "zylos-{{COMPONENT_NAME}}",
+  "version": "0.1.0",
+  "description": "{{COMPONENT_DESCRIPTION}}",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zylos-ai/zylos-{{COMPONENT_NAME}}.git"
+  },
+  "keywords": [
+    "zylos",
+    "{{COMPONENT_NAME}}",
+    "agent"
+  ],
+  "author": "zylos-ai",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}
