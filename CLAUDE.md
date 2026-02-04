@@ -31,7 +31,25 @@ Confirm with user:
 
 ### Step 3: Replace Placeholders
 
-Replace in all files:
+Run these sed commands (replace values with actual component info):
+
+```bash
+# Set variables
+NAME="discord"
+NAME_UPPER="DISCORD"
+TITLE="Discord"
+DESC="Discord bot integration"
+TYPE="communication"
+DATE=$(date +%Y-%m-%d)
+
+# Replace all placeholders
+find . -type f -exec sed -i "s/{{COMPONENT_NAME}}/$NAME/g" {} \;
+find . -type f -exec sed -i "s/{{COMPONENT_NAME_UPPER}}/$NAME_UPPER/g" {} \;
+find . -type f -exec sed -i "s/{{COMPONENT_TITLE}}/$TITLE/g" {} \;
+find . -type f -exec sed -i "s/{{COMPONENT_DESCRIPTION}}/$DESC/g" {} \;
+find . -type f -exec sed -i "s/{{COMPONENT_TYPE}}/$TYPE/g" {} \;
+find . -type f -exec sed -i "s/{{DATE}}/$DATE/g" {} \;
+```
 
 | Placeholder | Replace With | Example |
 |-------------|--------------|---------|
@@ -80,6 +98,8 @@ template/
 ├── SKILL.md              # Component metadata, read by zylos CLI
 ├── README.md             # User documentation
 ├── CHANGELOG.md          # Version history
+├── LICENSE               # MIT license
+├── .gitignore            # Git ignore rules
 ├── package.json          # npm dependencies
 ├── ecosystem.config.js   # PM2 configuration
 ├── send.js               # C4 send interface (communication only)
