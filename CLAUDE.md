@@ -87,6 +87,7 @@ Based on component type, implement core logic:
 git init
 git add .
 git commit -m "Initial commit: zylos-<name>"
+git branch -M main
 git remote add origin git@github.com:zylos-ai/zylos-<name>.git
 git push -u origin main
 ```
