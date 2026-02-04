@@ -7,8 +7,8 @@
  *
  * Usage:
  *   ./send.js <endpoint_id> "message text"
- *   ./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
- *   ./send.js <endpoint_id> "[MEDIA:file] /path/to/document.pdf"
+ *   ./send.js <endpoint_id> "[MEDIA:image]/path/to/image.png"
+ *   ./send.js <endpoint_id> "[MEDIA:file]/path/to/document.pdf"
  *
  * Exit codes:
  *   0 - Success
@@ -23,8 +23,8 @@ const { getConfig } = require('./src/lib/config');
 const args = process.argv.slice(2);
 if (args.length < 2) {
   console.error('Usage: send.js <endpoint_id> <message>');
-  console.error('       send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"');
-  console.error('       send.js <endpoint_id> "[MEDIA:file] /path/to/file.pdf"');
+  console.error('       send.js <endpoint_id> "[MEDIA:image]/path/to/image.png"');
+  console.error('       send.js <endpoint_id> "[MEDIA:file]/path/to/file.pdf"');
   process.exit(1);
 }
 
@@ -39,7 +39,7 @@ if (!config.enabled) {
 }
 
 // Parse media prefix
-const mediaMatch = message.match(/^\[MEDIA:(\w+)\]\s+(.+)$/);
+const mediaMatch = message.match(/^\[MEDIA:(\w+)\](.+)$/);
 
 async function send() {
   try {

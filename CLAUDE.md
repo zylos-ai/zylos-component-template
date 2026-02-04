@@ -128,8 +128,8 @@ Secrets: ~/zylos/.env
 ./send.js <endpoint_id> "message content"
 
 # Send media
-./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
-./send.js <endpoint_id> "[MEDIA:file] /path/to/file.pdf"
+./send.js <endpoint_id> "[MEDIA:image]/path/to/image.png"
+./send.js <endpoint_id> "[MEDIA:file]/path/to/file.pdf"
 ```
 
 ## Acceptance Checklist

@@ -31,6 +31,7 @@ This document defines the development specification for Zylos components, based 
 ├── README.md             # Documentation (required)
 ├── CHANGELOG.md          # Change log (required)
 ├── LICENSE               # Open source license
+├── .gitignore            # Git ignore rules
 ├── package.json          # Dependencies
 ├── ecosystem.config.js   # PM2 config (if service)
 ├── send.js               # C4 send interface (communication only)
