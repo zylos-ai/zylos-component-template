@@ -49,9 +49,9 @@ Enables Claude to communicate (Telegram, Discord, etc.).
 
 **send.js interface:**
 ```bash
-./send.js "message text"
-./send.js "[MEDIA:image] /path/to/image.png"
-./send.js "[MEDIA:file] /path/to/document.pdf"
+./send.js <endpoint_id> "message text"
+./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
+./send.js <endpoint_id> "[MEDIA:file] /path/to/document.pdf"
 ```
 
 ### Capability Component
