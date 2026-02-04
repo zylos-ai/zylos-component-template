@@ -1,19 +1,19 @@
-# AI 组件开发指南
+# AI Component Development Guide
 
-本文档指导 AI 助手使用此模板创建新的 zylos 组件。
+This document guides AI assistants to create new zylos components using this template.
 
-## 快速开始
+## Quick Start
 
-当用户要求创建新组件时，按以下步骤执行：
+When a user requests creating a new component, follow these steps:
 
-### 步骤 1: 复制模板
+### Step 1: Copy Template
 
-**快捷命令 (推荐):**
+**Quick command (recommended):**
 ```bash
 cd ~/src && git clone https://github.com/zylos-ai/zylos-component-template.git temp-clone && cp -r temp-clone/template zylos-<name> && rm -rf temp-clone && cd zylos-<name>
 ```
 
-**或分步执行:**
+**Or step by step:**
 ```bash
 cd ~/src
 git clone https://github.com/zylos-ai/zylos-component-template.git temp-clone
@@ -22,48 +22,48 @@ rm -rf temp-clone
 cd zylos-<name>
 ```
 
-### 步骤 2: 确定组件信息
+### Step 2: Gather Component Info
 
-向用户确认：
-- **名称**: 小写，如 `discord`, `slack`
-- **描述**: 一句话描述
-- **类型**: `communication` | `capability` | `utility`
+Confirm with user:
+- **Name**: lowercase, e.g., `discord`, `slack`
+- **Description**: one-line description
+- **Type**: `communication` | `capability` | `utility`
 
-### 步骤 3: 替换占位符
+### Step 3: Replace Placeholders
 
-在所有文件中替换：
+Replace in all files:
 
-| 占位符 | 替换为 | 示例 |
-|--------|--------|------|
-| `{{COMPONENT_NAME}}` | 组件名(小写) | `discord` |
-| `{{COMPONENT_NAME_UPPER}}` | 组件名(大写) | `DISCORD` |
-| `{{COMPONENT_TITLE}}` | 组件标题 | `Discord` |
-| `{{COMPONENT_DESCRIPTION}}` | 组件描述 | `Discord bot integration` |
-| `{{COMPONENT_TYPE}}` | 组件类型 | `communication` |
-| `{{DATE}}` | 当前日期 | `2026-02-04` |
+| Placeholder | Replace With | Example |
+|-------------|--------------|---------|
+| `{{COMPONENT_NAME}}` | Component name (lowercase) | `discord` |
+| `{{COMPONENT_NAME_UPPER}}` | Component name (uppercase) | `DISCORD` |
+| `{{COMPONENT_TITLE}}` | Component title | `Discord` |
+| `{{COMPONENT_DESCRIPTION}}` | Component description | `Discord bot integration` |
+| `{{COMPONENT_TYPE}}` | Component type | `communication` |
+| `{{DATE}}` | Current date | `2026-02-04` |
 
-### 步骤 4: 处理组件类型
+### Step 4: Handle Component Type
 
-如果不是 `communication` 类型，删除 send.js：
+If not `communication` type, delete send.js:
 ```bash
 rm -f send.js
 ```
 
-### 步骤 5: 实现组件逻辑
+### Step 5: Implement Component Logic
 
-根据组件类型，实现核心逻辑：
+Based on component type, implement core logic:
 
-**communication 类型**:
-- `src/index.js` - 消息接收服务
-- `send.js` - 消息发送接口
+**communication type**:
+- `src/index.js` - Message receiving service
+- `send.js` - Message sending interface
 
-**capability 类型**:
-- `src/index.js` - 主服务逻辑
+**capability type**:
+- `src/index.js` - Main service logic
 
-**utility 类型**:
-- `src/index.js` - 工具逻辑 (可能不需要常驻服务)
+**utility type**:
+- `src/index.js` - Tool logic (may not need persistent service)
 
-### 步骤 6: 初始化 Git
+### Step 6: Initialize Git
 
 ```bash
 git init
@@ -73,57 +73,57 @@ git remote add origin git@github.com:zylos-ai/zylos-<name>.git
 git push -u origin main
 ```
 
-## 模板文件结构
+## Template File Structure
 
 ```
 template/
-├── SKILL.md              # 组件元数据，zylos CLI 读取
-├── README.md             # 用户文档
-├── CHANGELOG.md          # 版本历史
-├── package.json          # npm 依赖
-├── ecosystem.config.js   # PM2 配置
-├── send.js               # C4 发送接口 (仅 communication)
+├── SKILL.md              # Component metadata, read by zylos CLI
+├── README.md             # User documentation
+├── CHANGELOG.md          # Version history
+├── package.json          # npm dependencies
+├── ecosystem.config.js   # PM2 configuration
+├── send.js               # C4 send interface (communication only)
 ├── hooks/
-│   ├── post-install.js   # 安装后钩子
-│   ├── pre-upgrade.js    # 升级前钩子
-│   └── post-upgrade.js   # 升级后钩子
+│   ├── post-install.js   # Post-install hook
+│   ├── pre-upgrade.js    # Pre-upgrade hook
+│   └── post-upgrade.js   # Post-upgrade hook
 └── src/
-    ├── index.js          # 主入口
+    ├── index.js          # Main entry point
     └── lib/
-        └── config.js     # 配置加载
+        └── config.js     # Configuration loader
 ```
 
-## 目录规范
+## Directory Convention
 
 ```
-代码: ~/.claude/skills/<component>/
-数据: ~/zylos/components/<component>/
-密钥: ~/zylos/.env
+Code: ~/.claude/skills/<component>/
+Data: ~/zylos/components/<component>/
+Secrets: ~/zylos/.env
 ```
 
-## send.js 接口 (communication 类型)
+## send.js Interface (communication type)
 
 ```bash
-# 发送文本
-./send.js <endpoint_id> "消息内容"
+# Send text
+./send.js <endpoint_id> "message content"
 
-# 发送媒体
+# Send media
 ./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
 ./send.js <endpoint_id> "[MEDIA:file] /path/to/file.pdf"
 ```
 
-## 验收清单
+## Acceptance Checklist
 
-完成组件后，确认：
+After completing the component, verify:
 
-- [ ] SKILL.md 元数据完整
-- [ ] README.md 说明清晰
-- [ ] `npm install && npm start` 可运行
-- [ ] post-install.js 创建数据目录和默认配置
-- [ ] post-upgrade.js 处理配置迁移
-- [ ] PM2 可管理服务
-- [ ] (communication) send.js 接口可用
+- [ ] SKILL.md metadata is complete
+- [ ] README.md is clear
+- [ ] `npm install && npm start` works
+- [ ] post-install.js creates data directory and default config
+- [ ] post-upgrade.js handles config migrations
+- [ ] PM2 can manage the service
+- [ ] (communication) send.js interface works
 
-## 参考实现
+## Reference Implementation
 
 - [zylos-telegram](https://github.com/zylos-ai/zylos-telegram)

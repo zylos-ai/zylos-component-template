@@ -1,132 +1,134 @@
-# Zylos 组件开发规范
+# Zylos Component Development Specification
 
-> **注意**: 此文档为完整参考规范。日常开发请参考 [CLAUDE.md](./CLAUDE.md)。
-> 创建新组件时，此文件会被删除。
+> **Note**: This is the full reference specification. For daily development, see [CLAUDE.md](./CLAUDE.md).
+> This file is deleted when creating a new component.
 
-**版本**: 1.0.0
-**日期**: 2026-02-04
-**状态**: 正式发布
+**Version**: 1.0.0
+**Date**: 2026-02-04
+**Status**: Released
 
-本文档定义 Zylos 组件的开发规范，基于 v2 hooks 模式。
-
----
-
-## 一、组件类型
-
-| 类型 | 说明 | 示例 |
-|------|------|------|
-| **communication** | 通讯组件，与外部平台交互 | telegram, lark, discord |
-| **capability** | 能力组件，扩展 Agent 功能 | browser, knowledge-base |
-| **utility** | 工具组件，辅助功能 | 自定义工具 |
+This document defines the development specification for Zylos components, based on v2 hooks mode.
 
 ---
 
-## 二、目录结构
+## 1. Component Types
 
-### 2.1 Skills 目录 (代码)
+| Type | Description | Examples |
+|------|-------------|----------|
+| **communication** | Communication channels for external platforms | telegram, lark, discord |
+| **capability** | Capability components extending Agent functionality | browser, knowledge-base |
+| **utility** | Utility components for helper functions | custom tools |
+
+---
+
+## 2. Directory Structure
+
+### 2.1 Skills Directory (Code)
 
 ```
 ~/.claude/skills/<component>/
-├── SKILL.md              # 组件元数据 (必须)
-├── README.md             # 说明文档 (必须)
-├── CHANGELOG.md          # 变更日志 (必须)
-├── LICENSE               # 开源协议
-├── package.json          # 依赖定义
-├── ecosystem.config.js   # PM2 配置 (如有服务)
-├── send.js               # C4 发送接口 (仅通讯组件)
-├── hooks/                # 生命周期钩子
-│   ├── post-install.js   # 安装后钩子
-│   └── post-upgrade.js   # 升级后钩子
-└── src/                  # 源代码
-    ├── index.js          # 主入口 (或 bot.js 等)
-    └── lib/              # 模块目录
-        └── config.js     # 配置加载
+├── SKILL.md              # Component metadata (required)
+├── README.md             # Documentation (required)
+├── CHANGELOG.md          # Change log (required)
+├── LICENSE               # Open source license
+├── package.json          # Dependencies
+├── ecosystem.config.js   # PM2 config (if service)
+├── send.js               # C4 send interface (communication only)
+├── hooks/                # Lifecycle hooks
+│   ├── post-install.js   # Post-install hook
+│   ├── pre-upgrade.js    # Pre-upgrade hook
+│   └── post-upgrade.js   # Post-upgrade hook
+└── src/                  # Source code
+    ├── index.js          # Main entry (or bot.js etc.)
+    └── lib/              # Module directory
+        └── config.js     # Config loader
 ```
 
-### 2.2 Data 目录 (数据)
+### 2.2 Data Directory
 
 ```
 ~/zylos/components/<component>/
-├── config.json           # 运行时配置
-├── media/                # 媒体文件 (如需要)
-└── logs/                 # 日志目录
+├── config.json           # Runtime configuration
+├── media/                # Media files (if needed)
+└── logs/                 # Log directory
 ```
 
-### 2.3 关键原则
+### 2.3 Key Principles
 
-1. **代码在 Skills**: `~/.claude/skills/<component>/`
-2. **数据在 Data**: `~/zylos/components/<component>/`
-3. **密钥在 .env**: `~/zylos/.env`
-4. **代码可升级覆盖，数据升级保留**
+1. **Code in Skills**: `~/.claude/skills/<component>/`
+2. **Data in Data**: `~/zylos/components/<component>/`
+3. **Secrets in .env**: `~/zylos/.env`
+4. **Code can be overwritten on upgrade, data is preserved**
 
 ---
 
-## 三、SKILL.md 规范 (v2)
+## 3. SKILL.md Specification (v2)
 
-SKILL.md 使用 YAML frontmatter 定义组件元数据：
+SKILL.md uses YAML frontmatter to define component metadata:
 
 ```yaml
 ---
 name: <component-name>
 version: x.y.z
-description: 组件描述
+description: Component description
 type: communication | capability | utility
 
 lifecycle:
-  npm: true                              # 是否需要 npm install
+  npm: true                              # Whether npm install needed
   service:
-    name: zylos-<component>              # PM2 服务名
-    entry: src/index.js                  # 入口文件
+    name: zylos-<component>              # PM2 service name
+    entry: src/index.js                  # Entry file
   data_dir: ~/zylos/components/<component>
   hooks:
     post-install: hooks/post-install.js
+    pre-upgrade: hooks/pre-upgrade.js
     post-upgrade: hooks/post-upgrade.js
 
 upgrade:
   repo: zylos-ai/zylos-<component>
   branch: main
 
-dependencies:                            # 依赖的其他组件
+dependencies:                            # Dependencies on other components
   - comm-bridge
 ---
 
-# 组件名称
+# Component Name
 
-组件说明文档...
+Component documentation...
 ```
 
-### 3.1 字段说明
+### 3.1 Field Description
 
-| 字段 | 必须 | 说明 |
-|------|------|------|
-| name | 是 | 组件名称 |
-| version | 是 | 版本号 (semver) |
-| description | 是 | 简短描述 |
-| type | 是 | 组件类型 |
-| lifecycle.npm | 否 | 是否需要 npm install，默认 true |
-| lifecycle.service | 否 | PM2 服务配置 |
-| lifecycle.data_dir | 否 | 数据目录路径 |
-| lifecycle.hooks | 否 | 生命周期钩子 |
-| upgrade.repo | 是 | GitHub 仓库 (org/repo) |
-| upgrade.branch | 否 | 跟踪分支，默认 main |
-| dependencies | 否 | 依赖的其他组件 |
+| Field | Required | Description |
+|-------|----------|-------------|
+| name | Yes | Component name |
+| version | Yes | Version number (semver) |
+| description | Yes | Short description |
+| type | Yes | Component type |
+| lifecycle.npm | No | Whether npm install needed, default true |
+| lifecycle.service | No | PM2 service config |
+| lifecycle.data_dir | No | Data directory path |
+| lifecycle.hooks | No | Lifecycle hooks |
+| upgrade.repo | Yes | GitHub repository (org/repo) |
+| upgrade.branch | No | Tracking branch, default main |
+| dependencies | No | Dependencies on other components |
 
 ---
 
-## 四、Hooks 规范
+## 4. Hooks Specification
 
-### 4.1 文件格式
+### 4.1 File Format
 
-- **推荐**: Node.js 脚本 (.js)
-- **支持**: Shell 脚本 (.sh 或无扩展名)
+- **Recommended**: Node.js script (.js)
+- **Supported**: Shell script (.sh or no extension)
 
 ### 4.2 post-install.js
 
-安装后执行，用于：
-- 创建数据子目录
-- 生成默认配置文件
-- 检查环境变量
-- 配置 PM2 服务
+Executed after installation, used for:
+- Creating data subdirectories
+- Generating default config file
+- Checking environment variables
+- Configuring PM2 service
 
 ```javascript
 #!/usr/bin/env node
@@ -138,29 +140,35 @@ const DATA_DIR = path.join(HOME, 'zylos/components/<component>');
 
 const DEFAULT_CONFIG = {
   enabled: true,
-  // ... 默认配置
+  // ... default config
 };
 
-// 1. 创建子目录
+// 1. Create subdirectories
 fs.mkdirSync(path.join(DATA_DIR, 'logs'), { recursive: true });
 
-// 2. 创建默认配置
+// 2. Create default config
 const configPath = path.join(DATA_DIR, 'config.json');
 if (!fs.existsSync(configPath)) {
   fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
 }
 
-// 3. 检查环境变量
+// 3. Check environment variables
 // ...
 
 console.log('[post-install] Complete!');
 ```
 
-### 4.3 post-upgrade.js
+### 4.3 pre-upgrade.js
 
-升级后执行，用于：
-- 配置 schema 迁移
-- 数据格式更新
+Executed before upgrade, used for:
+- Backing up critical data
+- Validating upgrade prerequisites
+
+### 4.4 post-upgrade.js
+
+Executed after upgrade, used for:
+- Config schema migrations
+- Data format updates
 
 ```javascript
 #!/usr/bin/env node
@@ -173,7 +181,7 @@ if (fs.existsSync(configPath)) {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   let migrated = false;
 
-  // Migration: 添加新字段
+  // Migration: Add new field
   if (config.newField === undefined) {
     config.newField = 'default';
     migrated = true;
@@ -190,9 +198,9 @@ console.log('[post-upgrade] Complete!');
 
 ---
 
-## 五、配置规范
+## 5. Configuration Specification
 
-### 5.1 config.json 结构
+### 5.1 config.json Structure
 
 ```json
 {
@@ -202,105 +210,59 @@ console.log('[post-upgrade] Complete!');
 }
 ```
 
-### 5.2 环境变量 (~/zylos/.env)
+### 5.2 Environment Variables (~/zylos/.env)
 
-密钥统一放在 .env：
+Secrets are placed in .env:
 
 ```bash
-# 组件名大写 + 下划线
+# Component name uppercase + underscore
 <COMPONENT>_API_KEY=xxx
 <COMPONENT>_SECRET=xxx
 ```
 
-### 5.3 配置加载模块 (src/lib/config.js)
-
-```javascript
-const fs = require('fs');
-const path = require('path');
-
-// 加载 .env
-const envPath = path.join(process.env.HOME, 'zylos', '.env');
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
-}
-
-const CONFIG_PATH = path.join(process.env.HOME, 'zylos/components/<component>/config.json');
-
-const DEFAULT_CONFIG = {
-  enabled: true,
-  // ...
-};
-
-function loadConfig() {
-  try {
-    const data = fs.readFileSync(CONFIG_PATH, 'utf8');
-    return { ...DEFAULT_CONFIG, ...JSON.parse(data) };
-  } catch (err) {
-    return DEFAULT_CONFIG;
-  }
-}
-
-function saveConfig(config) {
-  fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
-}
-
-function getEnv(key, defaultValue = '') {
-  return process.env[key] || defaultValue;
-}
-
-module.exports = { loadConfig, saveConfig, getEnv, CONFIG_PATH };
-```
-
 ---
 
-## 六、通讯组件规范
+## 6. Communication Component Specification
 
-通讯组件需额外实现 C4 接口。
+Communication components need to implement the C4 interface.
 
-### 6.1 send.js 接口
+### 6.1 send.js Interface
 
-位置: 组件根目录 `send.js`
+Location: Component root directory `send.js`
 
 ```bash
-# 调用方式
+# Usage
 node send.js <endpoint_id> "<message>"
 
-# 返回
-# 0: 成功
-# 非0: 失败
+# Return
+# 0: Success
+# non-0: Failure
 ```
 
-### 6.2 消息格式
+### 6.2 Message Format
 
-**接收方向** (外部 → Claude):
+**Receiving (External → Claude)**:
 ```
 [<SOURCE> <TYPE>] <username> said: <message>
 
-# 示例
-[TG DM] howardzhou said: 你好
-[TG GROUP:研发群] howardzhou said: @bot 帮我查一下
+# Examples
+[TG DM] howardzhou said: Hello
+[TG GROUP:Dev Team] howardzhou said: @bot please check
 ```
 
-**发送方向** (Claude → 外部):
+**Sending (Claude → External)**:
 ```bash
-# 纯文本
+# Plain text
 send.js "12345" "Hello"
 
-# 媒体文件 (使用前缀)
+# Media files (with prefix)
 send.js "12345" "[MEDIA:image]/path/to/image.jpg"
 send.js "12345" "[MEDIA:file]/path/to/document.pdf"
 ```
 
-### 6.3 媒体文件存储
-
-媒体文件存储在组件数据目录:
-```
-~/zylos/components/<component>/media/
-```
-
 ---
 
-## 七、PM2 服务配置
+## 7. PM2 Service Configuration
 
 ### 7.1 ecosystem.config.js
 
@@ -328,15 +290,15 @@ module.exports = {
 
 ---
 
-## 八、版本管理
+## 8. Version Management
 
-### 8.1 版本号规范
+### 8.1 Version Number Convention
 
-使用 [Semantic Versioning](https://semver.org/):
+Use [Semantic Versioning](https://semver.org/):
 - MAJOR.MINOR.PATCH
-- 例: 1.0.0, 1.1.0, 1.1.1
+- Example: 1.0.0, 1.1.0, 1.1.1
 
-### 8.2 CHANGELOG.md 规范
+### 8.2 CHANGELOG.md Convention
 
 ```markdown
 # Changelog
@@ -344,38 +306,38 @@ module.exports = {
 ## [x.y.z] - YYYY-MM-DD
 
 ### Added
-- 新功能
+- New features
 
 ### Changed
-- 变更
+- Changes
 
 ### Fixed
-- 修复
+- Fixes
 
 ### Upgrade Notes
-升级注意事项
+Upgrade notes
 ```
 
 ---
 
-## 九、验收标准
+## 9. Acceptance Criteria
 
-- [ ] SKILL.md 包含完整元数据
-- [ ] README.md 说明清晰
-- [ ] CHANGELOG.md 记录版本历史
-- [ ] hooks/post-install.js 正确创建数据目录和配置
-- [ ] hooks/post-upgrade.js 处理配置迁移
-- [ ] 配置与代码分离 (config.json + .env)
-- [ ] PM2 可管理启停 (如有服务)
-- [ ] `zylos install <component>` 可在全新环境完成安装
-- [ ] `zylos upgrade <component>` 保留用户配置
-
----
-
-## 十、参考实现
-
-- [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) - 通讯组件参考实现
+- [ ] SKILL.md contains complete metadata
+- [ ] README.md is clear
+- [ ] CHANGELOG.md records version history
+- [ ] hooks/post-install.js correctly creates data directory and config
+- [ ] hooks/post-upgrade.js handles config migrations
+- [ ] Configuration separated from code (config.json + .env)
+- [ ] PM2 can manage start/stop (if service)
+- [ ] `zylos install <component>` completes installation in fresh environment
+- [ ] `zylos upgrade <component>` preserves user configuration
 
 ---
 
-*文档结束*
+## 10. Reference Implementation
+
+- [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) - Communication component reference
+
+---
+
+*End of document*
