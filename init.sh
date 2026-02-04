@@ -7,7 +7,7 @@
 # Arguments:
 #   component_name  - lowercase name (e.g., telegram, discord)
 #   description     - one-line description
-#   type           - integration, communication, or utility (default: integration)
+#   type           - communication, capability, or utility (default: capability)
 #
 
 set -e
@@ -21,8 +21,10 @@ fi
 
 NAME="$1"
 DESC="$2"
-TYPE="${3:-integration}"
+TYPE="${3:-capability}"
 NAME_UPPER=$(echo "$NAME" | tr '[:lower:]' '[:upper:]')
+# Generate title from name (capitalize first letter)
+NAME_TITLE="$(echo "$NAME" | sed 's/\b\(.\)/\u\1/g')"
 DATE=$(date +%Y-%m-%d)
 
 echo "Initializing zylos-$NAME..."
@@ -35,6 +37,7 @@ replace_placeholders() {
   local file="$1"
   sed -i "s/{{COMPONENT_NAME}}/$NAME/g" "$file"
   sed -i "s/{{COMPONENT_NAME_UPPER}}/$NAME_UPPER/g" "$file"
+  sed -i "s/{{COMPONENT_TITLE}}/$NAME_TITLE/g" "$file"
   sed -i "s/{{COMPONENT_DESCRIPTION}}/$DESC/g" "$file"
   sed -i "s/{{COMPONENT_TYPE}}/$TYPE/g" "$file"
   sed -i "s/{{DATE}}/$DATE/g" "$file"

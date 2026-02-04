@@ -6,9 +6,9 @@
  * through this communication component.
  *
  * Usage:
- *   ./send.js "message text"
- *   ./send.js "[MEDIA:image] /path/to/image.png"
- *   ./send.js "[MEDIA:file] /path/to/document.pdf"
+ *   ./send.js <endpoint_id> "message text"
+ *   ./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
+ *   ./send.js <endpoint_id> "[MEDIA:file] /path/to/document.pdf"
  *
  * Exit codes:
  *   0 - Success
@@ -21,14 +21,15 @@ const { getConfig } = require('./src/lib/config');
 
 // Parse arguments
 const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.error('Usage: send.js <message>');
-  console.error('       send.js "[MEDIA:image] /path/to/image.png"');
-  console.error('       send.js "[MEDIA:file] /path/to/file.pdf"');
+if (args.length < 2) {
+  console.error('Usage: send.js <endpoint_id> <message>');
+  console.error('       send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"');
+  console.error('       send.js <endpoint_id> "[MEDIA:file] /path/to/file.pdf"');
   process.exit(1);
 }
 
-const message = args.join(' ');
+const endpointId = args[0];
+const message = args.slice(1).join(' ');
 
 // Check if component is enabled
 const config = getConfig();
@@ -44,9 +45,9 @@ async function send() {
   try {
     if (mediaMatch) {
       const [, mediaType, mediaPath] = mediaMatch;
-      await sendMedia(mediaType, mediaPath);
+      await sendMedia(endpointId, mediaType, mediaPath);
     } else {
-      await sendText(message);
+      await sendText(endpointId, message);
     }
     console.log('Message sent successfully');
     process.exit(0);
@@ -60,11 +61,11 @@ async function send() {
  * Send a text message
  * @param {string} text - Message text
  */
-async function sendText(text) {
+async function sendText(endpoint, text) {
   // TODO: Implement text sending logic
   // Example:
   // const client = getClient();
-  // await client.sendMessage(config.target, text);
+  // await client.sendMessage(endpoint, text);
   throw new Error('sendText not implemented');
 }
 
@@ -73,16 +74,16 @@ async function sendText(text) {
  * @param {string} type - Media type (image, file, video, audio)
  * @param {string} filePath - Path to the media file
  */
-async function sendMedia(type, filePath) {
+async function sendMedia(endpoint, type, filePath) {
   // TODO: Implement media sending logic
   // Example:
   // const client = getClient();
   // switch (type) {
   //   case 'image':
-  //     await client.sendImage(config.target, filePath);
+  //     await client.sendImage(endpoint, filePath);
   //     break;
   //   case 'file':
-  //     await client.sendFile(config.target, filePath);
+  //     await client.sendFile(endpoint, filePath);
   //     break;
   //   default:
   //     throw new Error(`Unsupported media type: ${type}`);

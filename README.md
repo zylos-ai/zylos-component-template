@@ -19,7 +19,7 @@ Standard template for creating new zylos components.
    - `{{COMPONENT_NAME}}` - Component name (lowercase, e.g., `telegram`)
    - `{{COMPONENT_NAME_UPPER}}` - Uppercase name (e.g., `TELEGRAM`)
    - `{{COMPONENT_DESCRIPTION}}` - One-line description
-   - `{{COMPONENT_TYPE}}` - Type: `integration`, `communication`, or `utility`
+   - `{{COMPONENT_TYPE}}` - Type: `communication`, `capability`, or `utility`
    - `{{DATE}}` - Current date (YYYY-MM-DD)
 
 ## Template Files
@@ -40,13 +40,6 @@ Standard template for creating new zylos components.
 
 ## Component Types
 
-### Integration Component
-Connects to external services (APIs, databases).
-
-**Required:**
-- All standard files
-- Service implementation in `src/`
-
 ### Communication Component
 Enables Claude to communicate (Telegram, Discord, etc.).
 
@@ -60,6 +53,13 @@ Enables Claude to communicate (Telegram, Discord, etc.).
 ./send.js "[MEDIA:image] /path/to/image.png"
 ./send.js "[MEDIA:file] /path/to/document.pdf"
 ```
+
+### Capability Component
+Extends agent capabilities (browser, knowledge-base, etc.).
+
+**Required:**
+- All standard files
+- Service implementation in `src/`
 
 ### Utility Component
 Internal tools and helpers.
