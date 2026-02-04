@@ -1,120 +1,57 @@
 # Zylos Component Template
 
-Standard template for creating new zylos components.
+创建 zylos 组件的标准模板。
 
-## Quick Start
+## 使用方式
 
-1. **Clone this template:**
-   ```bash
-   git clone https://github.com/zylos-ai/zylos-component-template.git zylos-mycomponent
-   cd zylos-mycomponent
-   ```
+### AI 开发 (推荐)
 
-2. **Run the initialization script:**
-   ```bash
-   ./init.sh mycomponent "My component description"
-   ```
+让 AI 助手阅读 [CLAUDE.md](./CLAUDE.md) 后执行：
 
-3. **Or manually replace placeholders:**
-   - `{{COMPONENT_NAME}}` - Component name (lowercase, e.g., `telegram`)
-   - `{{COMPONENT_NAME_UPPER}}` - Uppercase name (e.g., `TELEGRAM`)
-   - `{{COMPONENT_DESCRIPTION}}` - One-line description
-   - `{{COMPONENT_TYPE}}` - Type: `communication`, `capability`, or `utility`
-   - `{{DATE}}` - Current date (YYYY-MM-DD)
+> "使用 zylos-component-template 创建一个 xxx 组件"
 
-## Template Files
+### 手动开发
 
-| File | Purpose |
-|------|---------|
-| `COMPONENT-SPEC.md` | Full development specification |
-| `SKILL.md.template` | Component metadata (rename to `SKILL.md`) |
-| `README.md.template` | User-facing docs (rename to `README.md`) |
-| `CHANGELOG.md.template` | Version history |
-| `package.json.template` | npm configuration |
-| `ecosystem.config.js.template` | PM2 configuration |
-| `hooks/post-install.js.template` | Installation hook |
-| `hooks/post-upgrade.js.template` | Upgrade migration hook |
-| `src/index.js.template` | Main entry point |
-| `src/lib/config.js.template` | Configuration loader |
-| `send.js.template` | C4 interface (communication components only) |
-
-## Component Types
-
-### Communication Component
-Enables Claude to communicate (Telegram, Discord, etc.).
-
-**Required:**
-- All standard files
-- `send.js` - C4 Communication Bridge interface
-
-**send.js interface:**
 ```bash
-./send.js <endpoint_id> "message text"
-./send.js <endpoint_id> "[MEDIA:image] /path/to/image.png"
-./send.js <endpoint_id> "[MEDIA:file] /path/to/document.pdf"
+git clone https://github.com/zylos-ai/zylos-component-template.git zylos-mycomponent
+cd zylos-mycomponent
+./init.sh mycomponent "组件描述" communication
 ```
 
-### Capability Component
-Extends agent capabilities (browser, knowledge-base, etc.).
+## 组件类型
 
-**Required:**
-- All standard files
-- Service implementation in `src/`
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `communication` | 通讯组件 | telegram, discord |
+| `capability` | 能力组件 | browser, knowledge-base |
+| `utility` | 工具组件 | 辅助工具 |
 
-### Utility Component
-Internal tools and helpers.
-
-**Required:**
-- All standard files (service optional)
-
-## Directory Structure After Setup
+## 模板文件
 
 ```
-zylos-mycomponent/
-├── SKILL.md              # Component metadata
-├── README.md             # User documentation
-├── CHANGELOG.md          # Version history
-├── package.json          # npm configuration
-├── ecosystem.config.js   # PM2 configuration
-├── send.js               # (communication components only)
+├── SKILL.md.template         # 组件元数据
+├── README.md.template        # 用户文档
+├── CHANGELOG.md.template     # 版本历史
+├── package.json.template     # npm 配置
+├── ecosystem.config.js.template  # PM2 配置
+├── send.js.template          # C4 接口 (仅 communication)
 ├── hooks/
-│   ├── post-install.js   # Installation hook
-│   └── post-upgrade.js   # Upgrade hook
+│   ├── post-install.js.template  # 安装钩子
+│   └── post-upgrade.js.template  # 升级钩子
 └── src/
-    ├── index.js          # Main entry point
+    ├── index.js.template     # 主入口
     └── lib/
-        └── config.js     # Configuration loader
+        └── config.js.template    # 配置加载
 ```
 
-## Development Workflow
+## 文档
 
-1. **Implement your logic** in `src/index.js`
-2. **Add dependencies** to `package.json`
-3. **Configure defaults** in `src/lib/config.js`
-4. **Test locally:**
-   ```bash
-   npm install
-   npm start
-   ```
-5. **Push to GitHub** under `zylos-ai/` organization
+- [CLAUDE.md](./CLAUDE.md) - AI 开发指南
+- [COMPONENT-SPEC.md](./COMPONENT-SPEC.md) - 完整开发规范
 
-## Installation
+## 参考实现
 
-Users install via zylos CLI:
-```bash
-zylos install mycomponent
-```
-
-This will:
-1. Clone from `zylos-ai/zylos-mycomponent`
-2. Run `npm install`
-3. Create data directory
-4. Run `hooks/post-install.js`
-5. Start PM2 service
-
-## Reference Implementation
-
-See [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) for a complete example.
+[zylos-telegram](https://github.com/zylos-ai/zylos-telegram)
 
 ## License
 
