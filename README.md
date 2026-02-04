@@ -22,7 +22,10 @@ cd zylos-mycomponent
 
 或使用初始化脚本：
 ```bash
+git clone https://github.com/zylos-ai/zylos-component-template.git
+cd zylos-component-template
 ./init.sh mycomponent "组件描述" communication
+# 组件创建在 ../zylos-mycomponent/
 ```
 
 ## 组件类型
