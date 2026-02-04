@@ -15,19 +15,22 @@
  * - Configure PM2 with ecosystem.config.js
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const HOME = process.env.HOME;
 const SKILL_DIR = path.dirname(__dirname);
 const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');
 const ENV_FILE = path.join(HOME, 'zylos/.env');
 
-const DEFAULT_CONFIG = {
-  enabled: true,
-  // Add your default config fields here
-  settings: {}
+// Minimal initial config - full defaults are in src/lib/config.js
+const INITIAL_CONFIG = {
+  enabled: true
 };
 
 console.log('[post-install] Running {{COMPONENT_NAME}}-specific setup...\n');
@@ -43,7 +46,7 @@ console.log('  - logs/');
 const configPath = path.join(DATA_DIR, 'config.json');
 if (!fs.existsSync(configPath)) {
   console.log('\nCreating default config.json...');
-  fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
+  fs.writeFileSync(configPath, JSON.stringify(INITIAL_CONFIG, null, 2));
   console.log('  - config.json created');
 } else {
   console.log('\nConfig already exists, skipping.');

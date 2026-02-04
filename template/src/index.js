@@ -5,16 +5,15 @@
  * {{COMPONENT_DESCRIPTION}}
  */
 
-require('dotenv').config({ path: require('path').join(process.env.HOME, 'zylos/.env') });
-
-const { getConfig, watchConfig, DATA_DIR } = require('./lib/config');
+import 'dotenv/config';
+import { getConfig, watchConfig, DATA_DIR } from './lib/config.js';
 
 // Initialize
 console.log(`[{{COMPONENT_NAME}}] Starting...`);
 console.log(`[{{COMPONENT_NAME}}] Data directory: ${DATA_DIR}`);
 
 // Load configuration
-const config = getConfig();
+let config = getConfig();
 console.log(`[{{COMPONENT_NAME}}] Config loaded, enabled: ${config.enabled}`);
 
 if (!config.enabled) {
@@ -25,6 +24,7 @@ if (!config.enabled) {
 // Watch for config changes
 watchConfig((newConfig) => {
   console.log(`[{{COMPONENT_NAME}}] Config reloaded`);
+  config = newConfig;
   if (!newConfig.enabled) {
     console.log(`[{{COMPONENT_NAME}}] Component disabled, stopping...`);
     shutdown();

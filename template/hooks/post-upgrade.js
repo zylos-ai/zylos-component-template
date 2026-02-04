@@ -13,8 +13,8 @@
  * Note: Service restart is handled by zylos CLI after this hook.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const HOME = process.env.HOME;
 const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');
@@ -34,13 +34,6 @@ if (fs.existsSync(configPath)) {
       config.enabled = true;
       migrated = true;
       migrations.push('Added enabled field');
-    }
-
-    // Migration 2: Ensure settings object
-    if (!config.settings) {
-      config.settings = {};
-      migrated = true;
-      migrations.push('Added settings object');
     }
 
     // Add more migrations as needed for future versions

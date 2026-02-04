@@ -16,8 +16,8 @@
  *   1 - Abort upgrade (with error message)
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const HOME = process.env.HOME;
 const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');

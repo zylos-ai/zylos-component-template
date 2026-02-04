@@ -39,14 +39,14 @@ echo ""
 cp -r "$SCRIPT_DIR/template" "$TARGET_DIR"
 cd "$TARGET_DIR"
 
-# Replace placeholders
+# Replace placeholders (using | as delimiter to avoid issues with / in descriptions)
 echo "Replacing placeholders..."
-find . -type f -exec sed -i "s/{{COMPONENT_NAME}}/$NAME/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_NAME_UPPER}}/$NAME_UPPER/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_TITLE}}/$NAME_TITLE/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_DESCRIPTION}}/$DESC/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_TYPE}}/$TYPE/g" {} \;
-find . -type f -exec sed -i "s/{{DATE}}/$DATE/g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_NAME}}|$NAME|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_NAME_UPPER}}|$NAME_UPPER|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_TITLE}}|$NAME_TITLE|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_DESCRIPTION}}|$DESC|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_TYPE}}|$TYPE|g" {} \;
+find . -type f -exec sed -i "s|{{DATE}}|$DATE|g" {} \;
 
 # Remove send.js for non-communication components
 if [ "$TYPE" != "communication" ]; then
