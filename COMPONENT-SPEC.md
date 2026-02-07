@@ -34,7 +34,8 @@ This document defines the development specification for Zylos components, based 
 ├── .gitignore            # Git ignore rules
 ├── package.json          # Dependencies
 ├── ecosystem.config.js   # PM2 config (if service)
-├── send.js               # C4 send interface (communication only)
+├── scripts/
+│   └── send.js           # C4 send interface (communication only)
 ├── hooks/                # Lifecycle hooks
 │   ├── post-install.js   # Post-install hook
 │   ├── pre-upgrade.js    # Pre-upgrade hook
@@ -229,11 +230,11 @@ Communication components need to implement the C4 interface.
 
 ### 6.1 send.js Interface
 
-Location: Component root directory `send.js`
+Location: `scripts/send.js`
 
 ```bash
 # Usage
-node send.js <endpoint_id> "<message>"
+node scripts/send.js <endpoint_id> "<message>"
 
 # Return
 # 0: Success
@@ -254,11 +255,11 @@ node send.js <endpoint_id> "<message>"
 **Sending (Claude → External)**:
 ```bash
 # Plain text
-send.js "12345" "Hello"
+scripts/send.js "12345" "Hello"
 
 # Media files (with prefix)
-send.js "12345" "[MEDIA:image]/path/to/image.jpg"
-send.js "12345" "[MEDIA:file]/path/to/document.pdf"
+scripts/send.js "12345" "[MEDIA:image]/path/to/image.jpg"
+scripts/send.js "12345" "[MEDIA:file]/path/to/document.pdf"
 ```
 
 ---

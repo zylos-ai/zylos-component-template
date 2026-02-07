@@ -50,8 +50,8 @@ find . -type f -exec sed -i "s|{{DATE}}|$DATE|g" {} \;
 
 # Remove send.js for non-communication components
 if [ "$TYPE" != "communication" ]; then
-  rm -f send.js
-  echo "  - Removed send.js (not a communication component)"
+  rm -rf scripts/send.js
+  echo "  - Removed scripts/send.js (not a communication component)"
 fi
 
 # Initialize git
