@@ -62,9 +62,9 @@ find . -type f -exec sed -i "s/{{DATE}}/$DATE/g" {} \;
 
 ### Step 4: Handle Component Type
 
-If not `communication` type, delete send.js:
+If not `communication` type, delete scripts/send.js:
 ```bash
-rm -f send.js
+rm -f scripts/send.js
 ```
 
 ### Step 5: Implement Component Logic
@@ -73,7 +73,7 @@ Based on component type, implement core logic:
 
 **communication type**:
 - `src/index.js` - Message receiving service
-- `send.js` - Message sending interface
+- `scripts/send.js` - Message sending interface
 
 **capability type**:
 - `src/index.js` - Main service logic
@@ -103,7 +103,8 @@ template/
 ├── .gitignore            # Git ignore rules
 ├── package.json          # npm dependencies
 ├── ecosystem.config.js   # PM2 configuration
-├── send.js               # C4 send interface (communication only)
+├── scripts/
+│   └── send.js           # C4 send interface (communication only)
 ├── hooks/
 │   ├── post-install.js   # Post-install hook
 │   ├── pre-upgrade.js    # Pre-upgrade hook
@@ -122,15 +123,15 @@ Data: ~/zylos/components/<component>/
 Secrets: ~/zylos/.env
 ```
 
-## send.js Interface (communication type)
+## scripts/send.js Interface (communication type)
 
 ```bash
 # Send text
-./send.js <endpoint_id> "message content"
+./scripts/send.js <endpoint_id> "message content"
 
 # Send media
-./send.js <endpoint_id> "[MEDIA:image]/path/to/image.png"
-./send.js <endpoint_id> "[MEDIA:file]/path/to/file.pdf"
+./scripts/send.js <endpoint_id> "[MEDIA:image]/path/to/image.png"
+./scripts/send.js <endpoint_id> "[MEDIA:file]/path/to/file.pdf"
 ```
 
 ## Acceptance Checklist
@@ -143,7 +144,7 @@ After completing the component, verify:
 - [ ] post-install.js creates data directory and default config
 - [ ] post-upgrade.js handles config migrations
 - [ ] PM2 can manage the service
-- [ ] (communication) send.js interface works
+- [ ] (communication) scripts/send.js interface works
 
 ## Reference Implementation
 

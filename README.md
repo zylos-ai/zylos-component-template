@@ -40,7 +40,8 @@ cd zylos-component-template
     ├── CHANGELOG.md
     ├── package.json
     ├── ecosystem.config.js
-    ├── send.js
+    ├── scripts/
+    │   └── send.js
     ├── hooks/
     │   ├── post-install.js
     │   ├── pre-upgrade.js
