@@ -25,11 +25,11 @@ upgrade:
   branch: main
 
 config:
-  required: []
+  required:
     # - name: {{COMPONENT_NAME_UPPER}}_API_KEY
     #   description: API key for {{COMPONENT_NAME}}
     #   sensitive: true
-  optional: []
+  optional:
     # - name: {{COMPONENT_NAME_UPPER}}_DEBUG
     #   description: Enable debug mode
     #   default: "false"
