@@ -102,7 +102,7 @@ template/
 ├── LICENSE               # MIT license
 ├── .gitignore            # Git ignore rules
 ├── package.json          # npm dependencies
-├── ecosystem.config.js   # PM2 configuration
+├── ecosystem.config.cjs  # PM2 configuration (CommonJS required by PM2)
 ├── scripts/
 │   └── send.js           # C4 send interface (communication only)
 ├── hooks/
@@ -118,7 +118,7 @@ template/
 ## Directory Convention
 
 ```
-Code: ~/.claude/skills/<component>/
+Code: ~/zylos/.claude/skills/<component>/
 Data: ~/zylos/components/<component>/
 Secrets: ~/zylos/.env
 ```
@@ -146,6 +146,7 @@ After completing the component, verify:
 - [ ] PM2 can manage the service
 - [ ] (communication) scripts/send.js interface works
 
-## Reference Implementation
+## Reference Implementations
 
 - [zylos-telegram](https://github.com/zylos-ai/zylos-telegram)
+- [zylos-lark](https://github.com/zylos-ai/zylos-lark)
