@@ -6,25 +6,22 @@
  * - git clone
  * - npm install
  * - create data_dir
- * - register PM2 service (basic)
+ * - register PM2 service (uses ecosystem.config.cjs automatically)
  *
  * This hook handles component-specific setup:
  * - Create subdirectories
  * - Create default config.json
  * - Check for required environment variables
- * - Configure PM2 with ecosystem.config.cjs
  */
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const HOME = process.env.HOME;
-const SKILL_DIR = path.dirname(__dirname);
 const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');
 const ENV_FILE = path.join(HOME, 'zylos/.env');
 
@@ -67,18 +64,7 @@ try {
 //   console.log('\n[!] {{COMPONENT_NAME_UPPER}}_API_KEY not found in ' + ENV_FILE);
 // }
 
-// 4. Configure PM2 with ecosystem.config.cjs
-console.log('\nConfiguring PM2 service...');
-const ecosystemPath = path.join(SKILL_DIR, 'ecosystem.config.cjs');
-if (fs.existsSync(ecosystemPath)) {
-  try {
-    execSync('pm2 delete zylos-{{COMPONENT_NAME}} 2>/dev/null || true', { stdio: 'pipe' });
-    execSync(`pm2 start "${ecosystemPath}"`, { stdio: 'inherit' });
-    execSync('pm2 save', { stdio: 'pipe' });
-    console.log('  - Service configured');
-  } catch (err) {
-    console.error('  - PM2 configuration failed:', err.message);
-  }
-}
+// Note: PM2 service is configured by zylos CLI's registerService()
+// which automatically uses ecosystem.config.cjs when available.
 
 console.log('\n[post-install] Complete!');
