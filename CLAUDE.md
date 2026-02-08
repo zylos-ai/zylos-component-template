@@ -118,7 +118,7 @@ template/
 ## Directory Convention
 
 ```
-Code: ~/.claude/skills/<component>/
+Code: ~/zylos/.claude/skills/<component>/
 Data: ~/zylos/components/<component>/
 Secrets: ~/zylos/.env
 ```

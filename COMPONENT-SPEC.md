@@ -26,7 +26,7 @@ This document defines the development specification for Zylos components, based 
 ### 2.1 Skills Directory (Code)
 
 ```
-~/.claude/skills/<component>/
+~/zylos/.claude/skills/<component>/
 ├── SKILL.md              # Component metadata (required)
 ├── README.md             # Documentation (required)
 ├── CHANGELOG.md          # Change log (required)
@@ -57,7 +57,7 @@ This document defines the development specification for Zylos components, based 
 
 ### 2.3 Key Principles
 
-1. **Code in Skills**: `~/.claude/skills/<component>/`
+1. **Code in Skills**: `~/zylos/.claude/skills/<component>/`
 2. **Data in Data**: `~/zylos/components/<component>/`
 3. **Secrets in .env**: `~/zylos/.env`
 4. **Code can be overwritten on upgrade, data is preserved**
@@ -292,7 +292,7 @@ module.exports = {
   apps: [{
     name: 'zylos-<component>',
     script: 'src/index.js',
-    cwd: path.join(os.homedir(), '.claude/skills/<component>'),
+    cwd: path.join(os.homedir(), 'zylos/.claude/skills/<component>'),
     env: {
       NODE_ENV: 'production'
     },

@@ -39,7 +39,7 @@ cd zylos-component-template
     ├── README.md
     ├── CHANGELOG.md
     ├── package.json
-    ├── ecosystem.config.js
+    ├── ecosystem.config.cjs
     ├── scripts/
     │   └── send.js
     ├── hooks/
@@ -49,9 +49,10 @@ cd zylos-component-template
     └── src/
 ```
 
-## Reference Implementation
+## Reference Implementations
 
-[zylos-telegram](https://github.com/zylos-ai/zylos-telegram)
+- [zylos-telegram](https://github.com/zylos-ai/zylos-telegram)
+- [zylos-lark](https://github.com/zylos-ai/zylos-lark)
 
 ## License
 

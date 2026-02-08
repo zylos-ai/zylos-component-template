@@ -15,27 +15,10 @@
  *   1 - Error (message printed to stderr)
  */
 
-import fs from 'node:fs';
+import dotenv from 'dotenv';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Load .env
-const envPath = path.join(process.env.HOME, 'zylos/.env');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  for (const line of envContent.split('\n')) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    const eq = trimmed.indexOf('=');
-    if (eq > 0) {
-      const key = trimmed.slice(0, eq).trim();
-      const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
-      if (!process.env[key]) process.env[key] = val;
-    }
-  }
-}
+dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
 
 // Parse arguments
 const args = process.argv.slice(2);
