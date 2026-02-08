@@ -33,7 +33,7 @@ This document defines the development specification for Zylos components, based 
 ├── LICENSE               # Open source license
 ├── .gitignore            # Git ignore rules
 ├── package.json          # Dependencies
-├── ecosystem.config.js   # PM2 config (if service)
+├── ecosystem.config.cjs  # PM2 config (if service, CommonJS required by PM2)
 ├── scripts/
 │   └── send.js           # C4 send interface (communication only)
 ├── hooks/                # Lifecycle hooks
@@ -78,6 +78,7 @@ type: communication | capability | utility
 lifecycle:
   npm: true                              # Whether npm install needed
   service:
+    type: pm2                            # Service manager
     name: zylos-<component>              # PM2 service name
     entry: src/index.js                  # Entry file
   data_dir: ~/zylos/components/<component>
@@ -85,10 +86,20 @@ lifecycle:
     post-install: hooks/post-install.js
     pre-upgrade: hooks/pre-upgrade.js
     post-upgrade: hooks/post-upgrade.js
+  preserve:                              # Files preserved during upgrade
+    - config.json
+    - .env
+    - data/
 
 upgrade:
   repo: zylos-ai/zylos-<component>
   branch: main
+
+config:
+  required:
+    - name: API_KEY
+      description: API key
+      sensitive: true
 
 dependencies:                            # Dependencies on other components
   - comm-bridge
@@ -108,11 +119,16 @@ Component documentation...
 | description | Yes | Short description |
 | type | Yes | Component type |
 | lifecycle.npm | No | Whether npm install needed, default true |
-| lifecycle.service | No | PM2 service config |
+| lifecycle.service.type | No | Service manager (pm2) |
+| lifecycle.service.name | No | PM2 service name |
+| lifecycle.service.entry | No | Entry file path |
 | lifecycle.data_dir | No | Data directory path |
 | lifecycle.hooks | No | Lifecycle hooks |
+| lifecycle.preserve | No | Files to preserve during upgrade |
 | upgrade.repo | Yes | GitHub repository (org/repo) |
 | upgrade.branch | No | Tracking branch, default main |
+| config.required | No | Required config items (collected on install) |
+| config.optional | No | Optional config items (with defaults) |
 | dependencies | No | Dependencies on other components |
 
 ---
@@ -134,8 +150,8 @@ Executed after installation, used for:
 
 ```javascript
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const HOME = process.env.HOME;
 const DATA_DIR = path.join(HOME, 'zylos/components/<component>');
@@ -174,8 +190,8 @@ Executed after upgrade, used for:
 
 ```javascript
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 const configPath = path.join(process.env.HOME, 'zylos/components/<component>/config.json');
 
@@ -266,7 +282,7 @@ scripts/send.js "12345" "[MEDIA:file]/path/to/document.pdf"
 
 ## 7. PM2 Service Configuration
 
-### 7.1 ecosystem.config.js
+### 7.1 ecosystem.config.cjs
 
 ```javascript
 const path = require('path');
@@ -331,14 +347,15 @@ Upgrade notes
 - [ ] hooks/post-upgrade.js handles config migrations
 - [ ] Configuration separated from code (config.json + .env)
 - [ ] PM2 can manage start/stop (if service)
-- [ ] `zylos install <component>` completes installation in fresh environment
+- [ ] `zylos add <component>` completes installation in fresh environment
 - [ ] `zylos upgrade <component>` preserves user configuration
 
 ---
 
-## 10. Reference Implementation
+## 10. Reference Implementations
 
-- [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) - Communication component reference
+- [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) - Telegram communication component
+- [zylos-lark](https://github.com/zylos-ai/zylos-lark) - Lark/Feishu communication component
 
 ---
 

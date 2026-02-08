@@ -69,7 +69,7 @@ try {
 
 // 4. Configure PM2 with ecosystem.config.js
 console.log('\nConfiguring PM2 service...');
-const ecosystemPath = path.join(SKILL_DIR, 'ecosystem.config.js');
+const ecosystemPath = path.join(SKILL_DIR, 'ecosystem.config.cjs');
 if (fs.existsSync(ecosystemPath)) {
   try {
     execSync('pm2 delete zylos-{{COMPONENT_NAME}} 2>/dev/null || true', { stdio: 'pipe' });

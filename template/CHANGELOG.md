@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Initial release. For fresh installation:
 
 ```bash
-zylos install {{COMPONENT_NAME}}
+zylos add {{COMPONENT_NAME}}
 ```
 
 No migration required.
