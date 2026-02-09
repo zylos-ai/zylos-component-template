@@ -5,7 +5,11 @@
  * {{COMPONENT_DESCRIPTION}}
  */
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
+
 import { getConfig, watchConfig, DATA_DIR } from './lib/config.js';
 
 // Initialize
