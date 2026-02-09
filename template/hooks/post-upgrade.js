@@ -2,15 +2,14 @@
 /**
  * Post-upgrade hook for zylos-{{COMPONENT_NAME}}
  *
- * Called by zylos CLI after standard upgrade steps:
- * - git pull
- * - npm install
+ * Called by Claude after CLI upgrade completes (zylos upgrade --json).
+ * CLI handles: stop service, backup, file sync, npm install, manifest.
  *
  * This hook handles component-specific migrations:
  * - Config schema migrations
  * - Data format updates
  *
- * Note: Service restart is handled by zylos CLI after this hook.
+ * Note: Service restart is handled by Claude after this hook.
  */
 
 import fs from 'fs';
