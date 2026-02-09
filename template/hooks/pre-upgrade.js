@@ -2,9 +2,8 @@
 /**
  * Pre-upgrade hook for zylos-{{COMPONENT_NAME}}
  *
- * Called by zylos CLI BEFORE upgrade steps:
- * - git pull
- * - npm install
+ * Called by Claude BEFORE CLI upgrade steps.
+ * If this hook fails (exit code 1), the upgrade is aborted.
  *
  * This hook handles:
  * - Backup critical data before upgrade
