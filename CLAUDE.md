@@ -33,12 +33,12 @@ DESC="Discord bot integration"
 TYPE="communication"
 DATE=$(date +%Y-%m-%d)
 
-find . -type f -exec sed -i "s/{{COMPONENT_NAME}}/$NAME/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_NAME_UPPER}}/$NAME_UPPER/g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_TITLE}}/$TITLE/g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_NAME}}|$NAME|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_NAME_UPPER}}|$NAME_UPPER|g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_TITLE}}|$TITLE|g" {} \;
 find . -type f -exec sed -i "s|{{COMPONENT_DESCRIPTION}}|$DESC|g" {} \;
-find . -type f -exec sed -i "s/{{COMPONENT_TYPE}}/$TYPE/g" {} \;
-find . -type f -exec sed -i "s/{{DATE}}/$DATE/g" {} \;
+find . -type f -exec sed -i "s|{{COMPONENT_TYPE}}|$TYPE|g" {} \;
+find . -type f -exec sed -i "s|{{DATE}}|$DATE|g" {} \;
 ```
 
 | Placeholder | Replace With | Example |
@@ -178,8 +178,8 @@ function handleMessage(userId, username, chatId, text) {
   }
 
   // Forward to Claude
-  const message = `[SOURCE DM] ${username} said: ${text}`;
-  sendToC4('component-name', String(chatId), message);
+  const message = `[DISCORD DM] ${username} said: ${text}`;
+  sendToC4('discord', String(chatId), message);
 }
 ```
 
@@ -196,8 +196,8 @@ const recentMessages = getGroupContext(chatId);  // last N messages since bot's 
 const contextPrefix = recentMessages.length > 0
   ? `[Recent context]\n${recentMessages.map(m => `${m.user}: ${m.text}`).join('\n')}\n[Current message]\n`
   : '';
-const message = `[SOURCE GROUP:name] ${username} said: ${contextPrefix}${text}`;
-sendToC4('component-name', String(chatId), message);
+const message = `[DISCORD GROUP:${groupName}] ${username} said: ${contextPrefix}${text}`;
+sendToC4('discord', String(chatId), message);
 ```
 
 #### Message Sending Pattern (scripts/send.js)
@@ -239,7 +239,11 @@ Capability components extend the agent's abilities (browser automation, knowledg
 #### Service Pattern
 
 ```javascript
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
+
 import { getConfig, watchConfig } from './lib/config.js';
 
 let config = getConfig();
