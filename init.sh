@@ -25,7 +25,7 @@ NAME="$1"
 DESC="$2"
 TYPE="${3:-capability}"
 NAME_UPPER=$(echo "$NAME" | tr '[:lower:]' '[:upper:]')
-NAME_TITLE="$(echo "$NAME" | sed 's/\b\(.\)/\u\1/g')"
+NAME_TITLE="$(echo "$NAME" | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')"
 DATE=$(date +%Y-%m-%d)
 TARGET_DIR="$SCRIPT_DIR/../zylos-$NAME"
 

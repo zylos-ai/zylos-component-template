@@ -5,7 +5,11 @@
  * {{COMPONENT_DESCRIPTION}}
  */
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
+
 import { getConfig, watchConfig, DATA_DIR } from './lib/config.js';
 
 // Initialize
@@ -34,20 +38,18 @@ watchConfig((newConfig) => {
 // Main component logic
 async function main() {
   // TODO: Implement your component logic here
-  console.log(`[{{COMPONENT_NAME}}] Running...`);
+  //
+  // Communication components: set up platform SDK, listen for events, forward to C4
+  // Capability components: start HTTP server or other service interface
+  // Utility components: run task and exit (remove the keepalive below)
 
-  // Example: Keep process alive for a service
-  // setInterval(() => {}, 1000);
-
-  // Example: For one-shot tasks, just run and exit
-  // await doSomething();
-  // process.exit(0);
+  console.log(`[{{COMPONENT_NAME}}] Running`);
 }
 
 // Graceful shutdown
 function shutdown() {
   console.log(`[{{COMPONENT_NAME}}] Shutting down...`);
-  // TODO: Cleanup resources here
+  // TODO: Close connections, stop listeners, cleanup
   process.exit(0);
 }
 
