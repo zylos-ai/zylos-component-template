@@ -41,7 +41,7 @@ This document defines the development specification for Zylos components, based 
 │   ├── pre-upgrade.js    # Pre-upgrade hook
 │   └── post-upgrade.js   # Post-upgrade hook
 └── src/                  # Source code
-    ├── index.js          # Main entry (or bot.js etc.)
+    ├── index.js          # Main entry point
     └── lib/              # Module directory
         └── config.js     # Config loader
 ```
@@ -101,8 +101,7 @@ config:
       description: API key
       sensitive: true
 
-dependencies:                            # Dependencies on other components
-  - comm-bridge
+dependencies: []                          # Dependencies on other installable components
 ---
 
 # Component Name
