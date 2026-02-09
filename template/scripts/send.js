@@ -16,7 +16,7 @@
  */
 
 import dotenv from 'dotenv';
-import path from 'node:path';
+import path from 'path';
 
 dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
 
