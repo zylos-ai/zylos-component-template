@@ -1,6 +1,6 @@
 # zylos-{{COMPONENT_NAME}} Design Document
 
-**Version**: v1.0
+**Version**: v1.0.0
 **Date**: {{DATE}}
 **Author**: Zylos Team
 **Repository**: https://github.com/zylos-ai/zylos-{{COMPONENT_NAME}}
@@ -24,7 +24,8 @@ zylos-{{COMPONENT_NAME}}/
   scripts/
     send.js           — Outbound message handler (communication components)
   hooks/
-    UserPromptSubmit   — Inbound message handler (communication components)
+    post-install.js   — Post-install setup
+    post-upgrade.js   — Post-upgrade config migration
   SKILL.md            — Component specification for the Zylos agent
   ecosystem.config.cjs — PM2 service configuration
 ```
