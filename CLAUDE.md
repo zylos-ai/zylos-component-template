@@ -114,23 +114,51 @@ const C4_RECEIVE = path.join(process.env.HOME,
   'zylos/.claude/skills/comm-bridge/scripts/c4-receive.js');
 
 /**
+ * Parse c4-receive JSON response from stdout.
+ */
+function parseC4Response(stdout) {
+  if (!stdout) return null;
+  try {
+    return JSON.parse(stdout.trim());
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Forward a message to Claude via C4 bridge.
  * @param {string} source - Channel name, e.g. "discord"
  * @param {string} endpoint - Chat/channel ID for reply routing
  * @param {string} content - Formatted message string
+ * @param {function} [onReject] - Callback with error message when c4-receive rejects
  */
-function sendToC4(source, endpoint, content) {
+function sendToC4(source, endpoint, content, onReject) {
   const safeContent = content.replace(/'/g, "'\\''");
-  const cmd = `node "${C4_RECEIVE}" --channel "${source}" --endpoint "${endpoint}" --content '${safeContent}'`;
+  const cmd = `node "${C4_RECEIVE}" --channel "${source}" --endpoint "${endpoint}" --json --content '${safeContent}'`;
 
-  exec(cmd, (error) => {
+  exec(cmd, { encoding: 'utf8' }, (error, stdout) => {
     if (!error) {
       console.log(`[${source}] Sent to C4: ${content.substring(0, 50)}...`);
       return;
     }
-    // Retry once after 2s
+    // Structured rejection (health down/recovering) — no retry
+    const response = parseC4Response(error.stdout || stdout);
+    if (response && response.ok === false && response.error?.message) {
+      console.warn(`[${source}] C4 rejected (${response.error.code}): ${response.error.message}`);
+      if (onReject) onReject(response.error.message);
+      return;
+    }
+    // Unexpected failure — retry once after 2s
     console.warn(`[${source}] C4 send failed, retrying: ${error.message}`);
-    setTimeout(() => exec(cmd, () => {}), 2000);
+    setTimeout(() => {
+      exec(cmd, { encoding: 'utf8' }, (retryError, retryStdout) => {
+        if (!retryError) return;
+        const retryResponse = parseC4Response(retryError.stdout || retryStdout);
+        if (retryResponse?.ok === false && retryResponse.error?.message && onReject) {
+          onReject(retryResponse.error.message);
+        }
+      });
+    }, 2000);
   });
 }
 ```
@@ -177,9 +205,11 @@ function handleMessage(userId, username, chatId, text) {
     return;
   }
 
-  // Forward to Claude
+  // Forward to Claude (reply with rejection reason if C4 is down)
   const message = `[DISCORD DM] ${username} said: ${text}`;
-  sendToC4('discord', String(chatId), message);
+  sendToC4('discord', String(chatId), message, (errMsg) => {
+    replyToUser(chatId, errMsg);  // implement using your platform's send API
+  });
 }
 ```
 
@@ -197,7 +227,9 @@ const contextPrefix = recentMessages.length > 0
   ? `[Recent context]\n${recentMessages.map(m => `${m.user}: ${m.text}`).join('\n')}\n[Current message]\n`
   : '';
 const message = `[DISCORD GROUP:${groupName}] ${username} said: ${contextPrefix}${text}`;
-sendToC4('discord', String(chatId), message);
+sendToC4('discord', String(chatId), message, (errMsg) => {
+  replyToUser(chatId, errMsg);
+});
 ```
 
 #### Message Sending Pattern (scripts/send.js)
