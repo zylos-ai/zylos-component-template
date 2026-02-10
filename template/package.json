@@ -23,6 +23,18 @@
   ],
   "author": "Zylos AI",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "src/",
+    "scripts/",
+    "hooks/",
+    "LICENSE",
+    "README.md",
+    "SKILL.md",
+    "ecosystem.config.cjs"
+  ],
   "dependencies": {
     "dotenv": "^16.4.5"
   }
