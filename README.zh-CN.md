@@ -64,6 +64,10 @@ template/
 - [zylos-lark](https://github.com/zylos-ai/zylos-lark) — 飞书机器人（Webhook、文档访问、日历查询）
 - [zylos-browser](https://github.com/zylos-ai/zylos-browser) — 浏览器自动化（CDP、无障碍快照）
 
+## 发布你的组件
+
+做了有用的组件？提交到 [Zylos Registry](https://github.com/zylos-ai/zylos-registry)，让其他人也能一键发现和安装。
+
 ## 参与贡献
 
 请查看[贡献指南](https://github.com/zylos-ai/.github/blob/main/CONTRIBUTING.md)。

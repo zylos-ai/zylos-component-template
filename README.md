@@ -64,6 +64,10 @@ template/
 - [zylos-lark](https://github.com/zylos-ai/zylos-lark) — Lark/Feishu bot (webhooks, documents, calendar)
 - [zylos-browser](https://github.com/zylos-ai/zylos-browser) — Browser automation (CDP, accessibility snapshots)
 
+## Publish Your Component
+
+Built something useful? Submit it to the [Zylos Registry](https://github.com/zylos-ai/zylos-registry) so others can discover and install it with one command.
+
 ## Contributing
 
 See [Contributing Guide](https://github.com/zylos-ai/.github/blob/main/CONTRIBUTING.md).
