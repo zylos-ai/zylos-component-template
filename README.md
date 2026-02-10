@@ -19,10 +19,10 @@
 
 ---
 
-- **Three component types** — communication (Telegram, Lark), capability (browser), and utility
-- **Production-tested patterns** — owner binding, message routing, config hot-reload, graceful shutdown
-- **Full lifecycle** — install, upgrade, and uninstall hooks out of the box
-- **AI-friendly** — CLAUDE.md guide walks AI assistants through the entire build process
+- **Scaffold in seconds** — one command creates a complete, ready-to-develop component
+- **Zero boilerplate** — config hot-reload, lifecycle hooks, graceful shutdown, PM2 — all included
+- **Plug and play** — components are auto-discovered by Zylos CLI, one command to install and run
+- **AI-native development** — built-in guide enables AI assistants to build components autonomously
 
 ## Quick Start
 
