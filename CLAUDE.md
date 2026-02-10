@@ -4,6 +4,17 @@ This document guides AI assistants to create new zylos components using this tem
 
 For the full technical specification, see [COMPONENT-SPEC.md](./COMPONENT-SPEC.md).
 
+## Project Conventions
+
+These conventions apply to all Zylos components:
+
+- **ESM only** — Use `import`/`export`, never `require()`. All files use ES Modules (`"type": "module"` in package.json)
+- **Node.js 20+** — Minimum runtime version
+- **Conventional commits** — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
+- **No `files` in package.json** — Rely on `.gitignore` to exclude unnecessary files. Use `.npmignore` if publishing to npm
+- **Secrets in `.env` only** — Never commit secrets. Use `~/zylos/.env` for credentials, `config.json` for non-sensitive runtime config
+- **English for code** — Comments, commit messages, PR descriptions, and documentation in English
+
 ## Part 1: Quick Start
 
 ### Step 1: Copy Template
