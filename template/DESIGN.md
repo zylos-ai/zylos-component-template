@@ -24,6 +24,7 @@ zylos-{{COMPONENT_NAME}}/
   scripts/
     send.js           — Outbound message handler (communication components)
   hooks/
+    UserPromptSubmit  — Claude Code hook for inbound messages (communication)
     post-install.js   — Post-install setup
     post-upgrade.js   — Post-upgrade config migration
   SKILL.md            — Component specification for the Zylos agent
