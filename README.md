@@ -1,6 +1,8 @@
 <p align="center">
-  <h1 align="center">zylos-component-template</h1>
+  <img src="./assets/logo.png" alt="Zylos" height="120">
 </p>
+
+<h1 align="center">zylos-component-template</h1>
 
 <p align="center">
   Official template for building components for the Zylos agent ecosystem.
