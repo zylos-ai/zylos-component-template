@@ -1,7 +1,9 @@
 ---
 name: {{COMPONENT_NAME}}
 version: 0.1.0
-description: {{COMPONENT_DESCRIPTION}}
+description: >
+  {{COMPONENT_DESCRIPTION}}. Use when ...
+  (Include trigger patterns: what user requests should activate this component)
 type: {{COMPONENT_TYPE}}  # communication | capability | utility
 
 lifecycle:
@@ -39,31 +41,8 @@ dependencies: []
 
 # {{COMPONENT_TITLE}}
 
-{{COMPONENT_DESCRIPTION}}
-
-## Dependencies
-
-- None (or list dependencies)
-
-## When to Use
-
-- Describe when this component should be used
-
-## How to Use
-
 ```bash
-# Example usage
+# Example usage commands here
 ```
 
-## Config Location
-
-- Config: `~/zylos/components/{{COMPONENT_NAME}}/config.json`
-- Logs: `~/zylos/components/{{COMPONENT_NAME}}/logs/`
-
-## Service Management
-
-```bash
-pm2 status zylos-{{COMPONENT_NAME}}
-pm2 logs zylos-{{COMPONENT_NAME}}
-pm2 restart zylos-{{COMPONENT_NAME}}
-```
+Run `node ~/zylos/.claude/skills/{{COMPONENT_NAME}}/scripts/<script>.js --help` for all options.
