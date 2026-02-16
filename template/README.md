@@ -1,57 +1,61 @@
-# zylos-{{COMPONENT_NAME}}
+<p align="center">
+  <img src="./assets/logo.png" alt="Zylos" height="120">
+</p>
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/zylos-ai/zylos-{{COMPONENT_NAME}}/releases)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+<h1 align="center">zylos-{{COMPONENT_NAME}}</h1>
 
-{{COMPONENT_DESCRIPTION}}
+<p align="center">
+  {{COMPONENT_DESCRIPTION}}
+</p>
 
-## Features
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg" alt="Node.js"></a>
+  <a href="https://discord.gg/GS2J39EGff"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://x.com/ZylosAI"><img src="https://img.shields.io/badge/X-follow-000000?logo=x&logoColor=white" alt="X"></a>
+  <a href="https://zylos.ai"><img src="https://img.shields.io/badge/website-zylos.ai-blue" alt="Website"></a>
+  <a href="https://coco.xyz"><img src="https://img.shields.io/badge/Built%20by-Coco-orange" alt="Built by Coco"></a>
+</p>
 
-- Feature 1
-- Feature 2
-- Feature 3
+---
 
-## Getting Started
+- **Feature 1** — description
+- **Feature 2** — description
+- **Feature 3** — description
 
-Tell your Zylos agent:
+## Install
 
-> "Install the {{COMPONENT_NAME}} component"
+```bash
+zylos add {{COMPONENT_NAME}}
+```
 
-Zylos will guide you through the setup process.
+Or manually:
 
-## Managing the Component
+```bash
+cd ~/zylos/.claude/skills
+git clone https://github.com/zylos-ai/zylos-{{COMPONENT_NAME}}.git {{COMPONENT_NAME}}
+cd {{COMPONENT_NAME}} && npm install
+```
 
-Just tell your Zylos agent what you need:
+## Configuration
 
-| Task | Example |
-|------|---------|
-| Check status | "Show {{COMPONENT_NAME}} status" |
-| View logs | "Show {{COMPONENT_NAME}} logs" |
-| Restart | "Restart {{COMPONENT_NAME}}" |
+Add to `~/zylos/.env`:
 
-## Troubleshooting
+```bash
+# Required
+# {{COMPONENT_NAME_UPPER}}_API_KEY=your_api_key
+```
 
-Just ask Zylos:
+## Usage
 
-> "Check {{COMPONENT_NAME}} status"
+```bash
+# Example usage
+```
 
-> "Show {{COMPONENT_NAME}} logs"
+## Built by Coco
 
-## Documentation
-
-- [SKILL.md](./SKILL.md) - Component specification
-- [CHANGELOG.md](./CHANGELOG.md) - Version history
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a Pull Request
+Zylos is the open-source core of [Coco](https://coco.xyz/) — the AI employee platform.
 
 ## License
 
 [MIT](./LICENSE)
-
----
-
-Made with Claude by [Zylos AI](https://github.com/zylos-ai)
