@@ -56,7 +56,7 @@ find . -type f -exec sed -i "s|{{COMPONENT_NAME}}|$NAME|g" {} \;
 ### Step 5: Implement Component Logic
 
 Read the type-specific guide:
-- **Communication**: See [references/communication.md](./references/communication.md) — C4 bridge integration, message format, owner binding, group context
+- **Communication**: See [references/communication.md](./references/communication.md) — C4 bridge integration, message format, owner binding, group context. Also see [references/channel-standards.md](./references/channel-standards.md) — security pitfalls, coding standards, and pre-commit checklist
 - **Capability / Utility**: See [references/capability.md](./references/capability.md) — service pattern, CLI tool pattern
 
 ### Step 6: Update SKILL.md
