@@ -4,6 +4,8 @@
 
 <h1 align="center">🐙 zylos-component-template</h1>
 
+> **Zylos** (/ˈzaɪ.lɒs/) — Give your AI a life
+
 <p align="center">
   Official template for building components for the Zylos agent ecosystem.
 </p>
