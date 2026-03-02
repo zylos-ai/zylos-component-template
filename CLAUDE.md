@@ -15,11 +15,12 @@ For the full technical specification, see [COMPONENT-SPEC.md](./COMPONENT-SPEC.m
 
 ## Release Process
 
-When releasing a new version, **all three files** must be updated in the same commit:
+When releasing a new version, **all four files** must be updated in the same commit:
 
 1. **`package.json`** — Bump `version` field
-2. **`SKILL.md`** — Update `version` in YAML frontmatter to match package.json
-3. **`CHANGELOG.md`** — Add new version entry following [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
+2. **`package-lock.json`** — Run `npm install` after bumping package.json to sync the lock file
+3. **`SKILL.md`** — Update `version` in YAML frontmatter to match package.json
+4. **`CHANGELOG.md`** — Add new version entry following [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
 
 Version bump commit message: `chore: bump version to X.Y.Z`
 
