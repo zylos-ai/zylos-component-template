@@ -116,6 +116,26 @@ const message = `[DISCORD GROUP:${groupName}] ${username} said: ${contextPrefix}
 sendToC4('discord', String(chatId), message);
 ```
 
+## Outbound Messages (Claude → Platform via C4)
+
+Claude sends messages to external platforms via `c4-send.js`. **Always use stdin (heredoc) form** — CLI argument form silently truncates messages containing quotes, `$`, backticks, or other shell special characters.
+
+In the component's SKILL.md, document the sending pattern like this:
+
+```bash
+cat <<'EOF' | node ~/zylos/.claude/skills/comm-bridge/scripts/c4-send.js "<channel>" "<endpoint>"
+message content here
+EOF
+```
+
+**Never** use the CLI argument form in documentation:
+```bash
+# DON'T — fragile, breaks on special characters
+node ~/zylos/.claude/skills/comm-bridge/scripts/c4-send.js "<channel>" "<endpoint>" "message"
+```
+
+See `comm-bridge/references/c4-send.md` for the full specification.
+
 ## Message Sending (scripts/send.js)
 
 Implement `sendText()` and `sendMedia()` in the template:
