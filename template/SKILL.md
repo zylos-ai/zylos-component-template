@@ -22,6 +22,17 @@ lifecycle:
     - .env
     - data/
 
+# For HTTP services exposed through Zylos Caddy, prefer a root-internal app:
+# - The component listens on localhost and serves internal routes at /.
+# - Caddy exposes it at /{{COMPONENT_NAME}}/*, strips that prefix, and forwards
+#   X-Forwarded-Prefix. Browser URLs should be relative by default and should
+#   use X-Forwarded-Prefix when present.
+# http_routes:
+#   - path: /{{COMPONENT_NAME}}/*
+#     type: reverse_proxy
+#     target: localhost:3000
+#     strip_prefix: /{{COMPONENT_NAME}}
+
 upgrade:
   repo: zylos-ai/zylos-{{COMPONENT_NAME}}
   branch: main
