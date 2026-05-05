@@ -102,6 +102,12 @@ config:
       sensitive: true
 
 dependencies: []                          # Dependencies on other installable components
+
+http_routes:                              # Optional: browser-facing HTTP routes managed by Zylos Caddy
+  - path: /<component>/*
+    type: reverse_proxy
+    target: localhost:3000
+    strip_prefix: /<component>
 ---
 
 # Component Name
@@ -129,17 +135,85 @@ Component documentation...
 | config.required | No | Required config items (collected on install) |
 | config.optional | No | Optional config items (with defaults) |
 | dependencies | No | Dependencies on other components |
+| http_routes | No | Browser-facing HTTP routes managed by Zylos Caddy |
 
 ---
 
-## 4. Hooks Specification
+## 4. HTTP Routes and Base Path Compatibility
 
-### 4.1 File Format
+Components that expose a browser-facing HTTP service must support both direct local access and Caddy proxy access.
+
+### 4.1 Caddy Route Declaration
+
+Declare routes in `SKILL.md` frontmatter:
+
+```yaml
+http_routes:
+  - path: /<component>/*
+    type: reverse_proxy
+    target: localhost:3000
+    strip_prefix: /<component>
+```
+
+When `strip_prefix` is set, Zylos core generates a Caddy route equivalent to:
+
+```caddy
+redir /<component> /<component>/ permanent
+handle /<component>/* {
+    uri strip_prefix /<component>
+    reverse_proxy localhost:3000 {
+        header_up X-Forwarded-Prefix /<component>
+    }
+}
+```
+
+The component receives root-internal requests such as `/`, `/login`, and `/_assets/app.js`. The external browser path remains `/<component>/...`.
+
+### 4.2 Component Routing Rules
+
+HTTP components must follow these rules:
+
+1. **Root-internal routes**: serve the app at `/` internally. Do not mount route handlers under `/<component>`.
+2. **No hardcoded external prefix**: application code must not hardcode `/<component>` into links, forms, assets, redirects, or APIs.
+3. **Proxy-aware browser base**: use `X-Forwarded-Prefix` when present to generate browser-facing absolute paths.
+4. **Relative local fallback**: when `X-Forwarded-Prefix` is absent, generate relative URLs so direct local access works without Caddy.
+5. **Safe redirects**: validate `next` and similar redirect params against the current browser base. Reject external URLs and paths outside the component prefix.
+
+### 4.3 URL Generation Pattern
+
+Recommended behavior:
+
+| Request context | Browser base | Link/form/action examples |
+|-----------------|--------------|---------------------------|
+| Direct localhost, no `X-Forwarded-Prefix` | relative | `./login`, `./_assets/app.js`, `login?next=.%2F` |
+| Caddy proxy with `X-Forwarded-Prefix: /<component>` | absolute prefix | `/<component>/login`, `/<component>/_assets/app.js`, `/<component>/login?next=%2F<component>%2F` |
+
+Normalize `X-Forwarded-Prefix` before use:
+
+- It must start with `/`.
+- It must not end with `/`, except the root prefix `/`.
+- Ignore invalid values and fall back to relative local URLs.
+
+### 4.4 Test Requirements
+
+HTTP components with `http_routes.strip_prefix` must include tests for:
+
+- Direct access to `/` without proxy headers.
+- Proxied access with `X-Forwarded-Prefix: /<component>`.
+- Login/logout or other redirects preserving the correct browser base.
+- Template links, form actions, assets, and API URLs generated under the correct base.
+- Rejection of unsafe `next` targets, including absolute URLs and paths outside the current prefix.
+
+---
+
+## 5. Hooks Specification
+
+### 5.1 File Format
 
 - **Recommended**: Node.js script (.js)
 - **Supported**: Shell script (.sh or no extension)
 
-### 4.2 post-install.js
+### 5.2 post-install.js
 
 Executed after installation, used for:
 - Creating data subdirectories
@@ -175,13 +249,13 @@ if (!fs.existsSync(configPath)) {
 console.log('[post-install] Complete!');
 ```
 
-### 4.3 pre-upgrade.js
+### 5.3 pre-upgrade.js
 
 Executed before upgrade, used for:
 - Backing up critical data
 - Validating upgrade prerequisites
 
-### 4.4 post-upgrade.js
+### 5.4 post-upgrade.js
 
 Executed after upgrade, used for:
 - Config schema migrations
@@ -215,9 +289,9 @@ console.log('[post-upgrade] Complete!');
 
 ---
 
-## 5. Configuration Specification
+## 6. Configuration Specification
 
-### 5.1 config.json Structure
+### 6.1 config.json Structure
 
 ```json
 {
@@ -227,7 +301,7 @@ console.log('[post-upgrade] Complete!');
 }
 ```
 
-### 5.2 Environment Variables (~/zylos/.env)
+### 6.2 Environment Variables (~/zylos/.env)
 
 Secrets are placed in .env:
 
@@ -239,11 +313,11 @@ Secrets are placed in .env:
 
 ---
 
-## 6. Communication Component Specification
+## 7. Communication Component Specification
 
 Communication components need to implement the C4 interface.
 
-### 6.1 send.js Interface
+### 7.1 send.js Interface
 
 Location: `scripts/send.js`
 
@@ -256,7 +330,7 @@ node scripts/send.js <endpoint_id> "<message>"
 # non-0: Failure
 ```
 
-### 6.2 Message Format
+### 7.2 Message Format
 
 **Receiving (External → Claude)**:
 ```
@@ -279,9 +353,9 @@ scripts/send.js "12345" "[MEDIA:file]/path/to/document.pdf"
 
 ---
 
-## 7. PM2 Service Configuration
+## 8. PM2 Service Configuration
 
-### 7.1 ecosystem.config.cjs
+### 8.1 ecosystem.config.cjs
 
 ```javascript
 const path = require('path');
@@ -307,15 +381,15 @@ module.exports = {
 
 ---
 
-## 8. Version Management
+## 9. Version Management
 
-### 8.1 Version Number Convention
+### 9.1 Version Number Convention
 
 Use [Semantic Versioning](https://semver.org/):
 - MAJOR.MINOR.PATCH
 - Example: 1.0.0, 1.1.0, 1.1.1
 
-### 8.2 CHANGELOG.md Convention
+### 9.2 CHANGELOG.md Convention
 
 ```markdown
 # Changelog
@@ -337,13 +411,14 @@ Upgrade notes
 
 ---
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
 - [ ] SKILL.md contains complete metadata
 - [ ] README.md is clear
 - [ ] CHANGELOG.md records version history
 - [ ] hooks/post-install.js correctly creates data directory and config
 - [ ] hooks/post-upgrade.js handles config migrations
+- [ ] Browser-facing HTTP routes support both direct localhost access and Caddy proxy access
 - [ ] Configuration separated from code (config.json + .env)
 - [ ] PM2 can manage start/stop (if service)
 - [ ] `zylos add <component>` completes installation in fresh environment
@@ -351,7 +426,7 @@ Upgrade notes
 
 ---
 
-## 10. Reference Implementations
+## 11. Reference Implementations
 
 - [zylos-telegram](https://github.com/zylos-ai/zylos-telegram) - Telegram communication component
 - [zylos-lark](https://github.com/zylos-ai/zylos-lark) - Lark/Feishu communication component

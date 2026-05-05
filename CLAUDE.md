@@ -148,6 +148,34 @@ Use consistent prefix: `[component-name]`
 - **Runtime**: Log and continue (don't crash the service)
 - **Shutdown**: Graceful on SIGINT/SIGTERM
 
+### HTTP Services and Base Paths
+
+For components with a browser-facing HTTP service, make the app root-internal and proxy-aware:
+
+- **Declare Caddy exposure in SKILL.md** with `http_routes` using `path: /<component>/*` and `strip_prefix: /<component>`.
+- **Serve internal routes at `/`**. Do not mount the app internally under `/<component>`, and do not hardcode `/<component>` into route handlers.
+- **Let Caddy own the external prefix**. Zylos core strips `strip_prefix` before proxying and forwards `X-Forwarded-Prefix: /<component>`.
+- **Build browser URLs from request context**. If `X-Forwarded-Prefix` is present, generate absolute-path URLs under that prefix. If it is absent, use relative URLs such as `./login`, `./_assets/app.js`, and `login?next=.%2F` so direct localhost access still works.
+- **Validate redirect targets by browser base**. `next` and similar redirect params must not accept arbitrary absolute URLs or paths outside the current browser base.
+- **Test both access modes**: direct local access (`http://127.0.0.1:<port>/`) and proxied access simulated with `X-Forwarded-Prefix: /<component>`.
+
+Example SKILL.md route:
+
+```yaml
+http_routes:
+  - path: /my-component/*
+    type: reverse_proxy
+    target: localhost:3000
+    strip_prefix: /my-component
+```
+
+Example URL behavior:
+
+| Request context | Login form action | Asset URL | Redirect from `/` |
+|-----------------|-------------------|-----------|-------------------|
+| direct localhost | `./login` | `./_assets/app.js` | `login?next=.%2F` |
+| Caddy with `X-Forwarded-Prefix: /my-component` | `/my-component/login` | `/my-component/_assets/app.js` | `/my-component/login?next=%2Fmy-component%2F` |
+
 ### Hooks
 
 | Hook | When | Purpose |
