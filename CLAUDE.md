@@ -156,8 +156,10 @@ For components with a browser-facing HTTP service, make the app root-internal an
 - **Serve internal routes at `/`**. Do not mount the app internally under `/<component>`, and do not hardcode `/<component>` into route handlers.
 - **Let Caddy own the external prefix**. Zylos core strips `strip_prefix` before proxying and forwards `X-Forwarded-Prefix: /<component>`.
 - **Build browser URLs from request context**. If `X-Forwarded-Prefix` is present, generate absolute-path URLs under that prefix. If it is absent, use relative URLs such as `./login`, `./_assets/app.js`, and `login?next=.%2F` so direct localhost access still works.
-- **Validate redirect targets by browser base**. `next` and similar redirect params must not accept arbitrary absolute URLs or paths outside the current browser base.
-- **Test both access modes**: direct local access (`http://127.0.0.1:<port>/`) and proxied access simulated with `X-Forwarded-Prefix: /<component>`.
+- **Treat `X-Forwarded-Prefix` as untrusted input**. Accept only a clean path prefix: no query/fragment, whitespace/control chars, backslashes, protocol-like or protocol-relative strings, dot segments, percent-encoded input, or HTML metacharacters. Invalid values must fall back to direct-local relative URLs.
+- **Validate redirect targets by browser base**. `next` and similar redirect params must not accept arbitrary absolute URLs, dot-segment escapes such as `/<component>/../admin`, or paths outside the current browser base.
+- **Keep caches keyed and invalidated by browser base**. If rendered HTML includes browser-base-specific links, either avoid caching that HTML across bases or invalidate every browser-base variant when the underlying resource changes.
+- **Test both access modes and hostile inputs**: direct local access (`http://127.0.0.1:<port>/`), proxied access simulated with `X-Forwarded-Prefix: /<component>`, unsafe forwarded prefixes, and unsafe redirect `next` values.
 
 Example SKILL.md route:
 

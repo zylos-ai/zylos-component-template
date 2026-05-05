@@ -177,7 +177,9 @@ HTTP components must follow these rules:
 2. **No hardcoded external prefix**: application code must not hardcode `/<component>` into links, forms, assets, redirects, or APIs.
 3. **Proxy-aware browser base**: use `X-Forwarded-Prefix` when present to generate browser-facing absolute paths.
 4. **Relative local fallback**: when `X-Forwarded-Prefix` is absent, generate relative URLs so direct local access works without Caddy.
-5. **Safe redirects**: validate `next` and similar redirect params against the current browser base. Reject external URLs and paths outside the component prefix.
+5. **Strict forwarded-prefix validation**: treat `X-Forwarded-Prefix` as untrusted. Accept only a clean path prefix and reject query/fragment, whitespace/control chars, backslashes, protocol-like or protocol-relative values, dot segments, percent-encoded input, and HTML metacharacters before using it in templates or redirects.
+6. **Safe redirects**: validate `next` and similar redirect params against the current browser base. Reject external URLs, dot-segment escapes such as `/<component>/../admin`, and paths outside the component prefix.
+7. **Browser-base-aware caching**: if cached HTML contains links, forms, scripts, or API URLs derived from the browser base, cache entries must include the browser base in the key or render those parts after cache lookup. File watchers or other invalidators must clear every browser-base variant for the same underlying resource.
 
 ### 4.3 URL Generation Pattern
 
@@ -191,7 +193,9 @@ Recommended behavior:
 Normalize `X-Forwarded-Prefix` before use:
 
 - It must start with `/`.
+- It must not start with `//`.
 - It must not end with `/`, except the root prefix `/`.
+- It must not contain query strings, fragments, spaces, control characters, backslashes, protocols, `.` / `..` path segments, percent-encoded input, or HTML metacharacters (`"`, `'`, `` ` ``, `<`, `>`, `&`).
 - Ignore invalid values and fall back to relative local URLs.
 
 ### 4.4 Test Requirements
@@ -202,7 +206,9 @@ HTTP components with `http_routes.strip_prefix` must include tests for:
 - Proxied access with `X-Forwarded-Prefix: /<component>`.
 - Login/logout or other redirects preserving the correct browser base.
 - Template links, form actions, assets, and API URLs generated under the correct base.
-- Rejection of unsafe `next` targets, including absolute URLs and paths outside the current prefix.
+- Rejection of unsafe `X-Forwarded-Prefix` values, including protocol-relative prefixes (`//evil.test`), query/fragment injection, and HTML metacharacters.
+- Rejection of unsafe `next` targets, including absolute URLs, paths outside the current prefix, and dot-segment escapes such as `/<component>/../admin`.
+- Cache invalidation across all browser-base variants when rendered HTML is browser-base-specific.
 
 ---
 
