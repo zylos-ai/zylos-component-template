@@ -58,7 +58,9 @@ function normalizeForwardedPrefix(value) {
   if (!value || typeof value !== 'string') return '';
   const prefix = value.split(',')[0].trim();
   if (!prefix.startsWith('/')) return '';
-  if (prefix.includes('..') || prefix.includes('//')) return '';
+  if (prefix.startsWith('//')) return '';
+  if (prefix.includes('\\') || prefix.includes('://') || /[\x00-\x20?#"'`<>&%]/.test(prefix)) return '';
+  if (prefix.split('/').some(part => part === '..' || part === '.')) return '';
   return prefix === '/' ? '' : prefix.replace(/\/+$/, '');
 }
 
@@ -74,6 +76,8 @@ function browserPath(req, pathname) {
 ```
 
 Direct local access should use relative URLs (`./login`, `./_assets/app.js`). Caddy access should use the forwarded prefix (`/my-component/login`, `/my-component/_assets/app.js`). Do not hardcode `/my-component` into route handlers or templates.
+
+Redirect `next` parameters require the same rigor: reject protocols, protocol-relative URLs, backslashes, control characters, decoded `.` / `..` path segments, and paths outside the current browser base. If rendered HTML is cached and includes browser-base-specific URLs, include the browser base in the cache key and make file watchers invalidate all variants for the same slug/resource.
 
 ### CLI Tool Pattern
 
