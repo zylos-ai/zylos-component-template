@@ -230,6 +230,7 @@ Contract:
 - Sensitive values must not be printed.
 - Exit non-zero if input is invalid or config cannot be written.
 - If the configure hook exits non-zero, zylos logs a warning and continues installation. The component may still need manual configuration before service start succeeds.
+- `configure` is install-time only. Upgrade-time config migrations belong in `post-upgrade`, where the component can map old keys or storage formats into the current `config.json` schema.
 
 ```javascript
 #!/usr/bin/env node
