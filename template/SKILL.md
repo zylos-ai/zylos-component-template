@@ -19,7 +19,6 @@ lifecycle:
     post-upgrade: hooks/post-upgrade.js
   preserve:
     - config.json
-    - .env
     - data/
 
 # For HTTP services exposed through Zylos Caddy, prefer a root-internal app:

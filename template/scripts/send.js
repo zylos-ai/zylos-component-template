@@ -15,11 +15,6 @@
  *   1 - Error (message printed to stderr)
  */
 
-import dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
-
 // Parse arguments
 const args = process.argv.slice(2);
 if (args.length < 2) {

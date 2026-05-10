@@ -9,7 +9,7 @@
  * This hook handles component-specific setup:
  * - Create subdirectories
  * - Create default config.json
- * - Check for required environment variables
+ * - Verify required config fields
  */
 
 import fs from 'fs';
@@ -17,7 +17,6 @@ import path from 'path';
 
 const HOME = process.env.HOME;
 const DATA_DIR = path.join(HOME, 'zylos/components/{{COMPONENT_NAME}}');
-const ENV_FILE = path.join(HOME, 'zylos/.env');
 
 // Minimal initial config - full defaults are in src/lib/config.js
 const INITIAL_CONFIG = {
@@ -43,19 +42,11 @@ if (!fs.existsSync(configPath)) {
   console.log('\nConfig already exists, skipping.');
 }
 
-// 3. Check environment variables (customize as needed)
-console.log('\nChecking environment variables...');
-let envContent = '';
-try {
-  envContent = fs.readFileSync(ENV_FILE, 'utf8');
-} catch (e) {
-  // .env file doesn't exist yet
-}
-
-// Example: Check for required API key
-// const hasApiKey = envContent.includes('{{COMPONENT_NAME_UPPER}}_API_KEY');
-// if (!hasApiKey) {
-//   console.log('\n[!] {{COMPONENT_NAME_UPPER}}_API_KEY not found in ' + ENV_FILE);
+// 3. Verify required config fields (customize as needed)
+// Example: Check for required API key in config.json
+// const cfg = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+// if (!cfg.api_key) {
+//   console.log('\n[!] api_key not found in config.json');
 // }
 
 // Note: PM2 service is started by Claude after this hook completes.

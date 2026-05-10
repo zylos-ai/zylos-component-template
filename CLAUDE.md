@@ -10,7 +10,7 @@ For the full technical specification, see [COMPONENT-SPEC.md](./COMPONENT-SPEC.m
 - **Node.js 20+** — Minimum runtime version
 - **Conventional commits** — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
 - **No `files` in package.json** — Rely on `.gitignore` to exclude
-- **Secrets in `.env` only** — Never commit secrets. `~/zylos/.env` for credentials, `config.json` for non-sensitive runtime config
+- **All config in `config.json`** — Secrets and runtime config both live in `~/zylos/components/<name>/config.json`. This file is in the data directory (never committed to git). Mark sensitive fields with `sensitive: true` in SKILL.md for future vault integration
 - **English for code** — Comments, commit messages, PR descriptions, documentation
 
 ## Release Process
@@ -113,27 +113,27 @@ git push -u origin main
 
 ### Config Management
 
+All component configuration lives in one place:
+
 | Location | What goes here | Example |
 |----------|---------------|---------|
-| `~/zylos/.env` | Secrets and credentials | `DISCORD_BOT_TOKEN=xxx` |
-| `~/zylos/components/<name>/config.json` | Runtime configuration | `{"enabled": true}` |
+| `~/zylos/components/<name>/config.json` | All config (secrets + runtime) | `{"bot_token": "xxx", "enabled": true}` |
 
-Secrets NEVER go in config.json. Declare them in SKILL.md frontmatter:
+This file is in the data directory — never committed to git, preserved across upgrades. Declare sensitive fields in SKILL.md frontmatter for future vault integration:
 
 ```yaml
 config:
   required:
     - name: DISCORD_BOT_TOKEN
       description: Discord bot token
-      sensitive: true
+      sensitive: true    # Marks this field for vault migration
 ```
 
 ### Directory Convention
 
 ```
 Code:    ~/zylos/.claude/skills/<component>/    # Overwritten on upgrade
-Data:    ~/zylos/components/<component>/         # Preserved across upgrades
-Secrets: ~/zylos/.env                            # Shared across components
+Data:    ~/zylos/components/<component>/         # Preserved across upgrades (config.json + data/)
 ```
 
 **Code is disposable, data is permanent.** Never store user data in the skills directory.

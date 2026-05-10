@@ -59,7 +59,7 @@ This document defines the development specification for Zylos components, based 
 
 1. **Code in Skills**: `~/zylos/.claude/skills/<component>/`
 2. **Data in Data**: `~/zylos/components/<component>/`
-3. **Secrets in .env**: `~/zylos/.env`
+3. **Secrets in config.json**: `~/zylos/components/<component>/config.json` (mark `sensitive: true` in SKILL.md)
 4. **Code can be overwritten on upgrade, data is preserved**
 
 ---
@@ -88,7 +88,6 @@ lifecycle:
     post-upgrade: hooks/post-upgrade.js
   preserve:                              # Files preserved during upgrade
     - config.json
-    - .env
     - data/
 
 upgrade:
@@ -249,7 +248,7 @@ if (!fs.existsSync(configPath)) {
   fs.writeFileSync(configPath, JSON.stringify(DEFAULT_CONFIG, null, 2));
 }
 
-// 3. Check environment variables
+// 3. Verify config has required fields
 // ...
 
 console.log('[post-install] Complete!');
@@ -307,15 +306,19 @@ console.log('[post-upgrade] Complete!');
 }
 ```
 
-### 6.2 Environment Variables (~/zylos/.env)
+### 6.2 Secrets
 
-Secrets are placed in .env:
+Secrets live in `config.json` alongside runtime config. Mark sensitive fields with `sensitive: true` in SKILL.md `config.required` to enable future vault integration:
 
-```bash
-# Component name uppercase + underscore
-<COMPONENT>_API_KEY=xxx
-<COMPONENT>_SECRET=xxx
+```json
+{
+  "enabled": true,
+  "api_key": "xxx",
+  "settings": {}
+}
 ```
+
+Components read secrets from `config.json` — they never need to know the secret's origin. When vault is introduced, the platform layer populates `config.json` from vault; component code stays unchanged.
 
 ---
 
@@ -425,7 +428,7 @@ Upgrade notes
 - [ ] hooks/post-install.js correctly creates data directory and config
 - [ ] hooks/post-upgrade.js handles config migrations
 - [ ] Browser-facing HTTP routes support both direct localhost access and Caddy proxy access
-- [ ] Configuration separated from code (config.json + .env)
+- [ ] Configuration separated from code (config.json in data directory)
 - [ ] PM2 can manage start/stop (if service)
 - [ ] `zylos add <component>` completes installation in fresh environment
 - [ ] `zylos upgrade <component>` preserves user configuration

@@ -11,11 +11,6 @@ Extend the agent's abilities (browser automation, image generation, knowledge ba
 ### Service Pattern
 
 ```javascript
-import dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({ path: path.join(process.env.HOME, 'zylos/.env') });
-
 import { getConfig, watchConfig } from './lib/config.js';
 
 let config = getConfig();
