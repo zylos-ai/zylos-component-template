@@ -14,12 +14,12 @@ lifecycle:
     entry: src/index.js
   data_dir: ~/zylos/components/{{COMPONENT_NAME}}
   hooks:
+    configure: hooks/configure.js
     post-install: hooks/post-install.js
     pre-upgrade: hooks/pre-upgrade.js
     post-upgrade: hooks/post-upgrade.js
   preserve:
     - config.json
-    - .env
     - data/
 
 # For HTTP services exposed through Zylos Caddy, prefer a root-internal app:
@@ -39,6 +39,8 @@ upgrade:
 
 config:
   required:
+    # Values are collected by zylos and passed to lifecycle.hooks.configure as stdin JSON.
+    # The configure hook decides how to store them in config.json.
     # - name: {{COMPONENT_NAME_UPPER}}_API_KEY
     #   description: API key for {{COMPONENT_NAME}}
     #   sensitive: true

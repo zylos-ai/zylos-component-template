@@ -39,11 +39,12 @@ cd {{COMPONENT_NAME}} && npm install
 
 ## Configuration
 
-Add to `~/zylos/.env`:
+Edit `~/zylos/components/{{COMPONENT_NAME}}/config.json`:
 
-```bash
-# Required
-# {{COMPONENT_NAME_UPPER}}_API_KEY=your_api_key
+```json
+{
+  "enabled": true
+}
 ```
 
 ## Usage
