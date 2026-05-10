@@ -83,6 +83,7 @@ lifecycle:
     entry: src/index.js                  # Entry file
   data_dir: ~/zylos/components/<component>
   hooks:
+    configure: hooks/configure.js
     post-install: hooks/post-install.js
     pre-upgrade: hooks/pre-upgrade.js
     post-upgrade: hooks/post-upgrade.js
@@ -127,7 +128,7 @@ Component documentation...
 | lifecycle.service.name | No | PM2 service name |
 | lifecycle.service.entry | No | Entry file path |
 | lifecycle.data_dir | No | Data directory path |
-| lifecycle.hooks | No | Lifecycle hooks |
+| lifecycle.hooks | No | Lifecycle hooks. `configure` is the non-interactive config storage hook |
 | lifecycle.preserve | No | Files to preserve during upgrade |
 | upgrade.repo | Yes | GitHub repository (org/repo) |
 | upgrade.branch | No | Tracking branch, default main |
@@ -218,12 +219,51 @@ HTTP components with `http_routes.strip_prefix` must include tests for:
 - **Recommended**: Node.js script (.js)
 - **Supported**: Shell script (.sh or no extension)
 
-### 5.2 post-install.js
+### 5.2 configure.js
+
+Executed after zylos collects `config.required` values and before `post-install`.
+
+Contract:
+- Input is a JSON object on stdin, keyed by SKILL.md config item name.
+- The hook is non-interactive and must not prompt.
+- The component owns storage and should write to `~/zylos/components/<component>/config.json`.
+- Sensitive values must not be printed.
+- Exit non-zero if input is invalid or config cannot be written.
+
+```javascript
+#!/usr/bin/env node
+import fs from 'node:fs';
+import path from 'node:path';
+
+const configPath = path.join(process.env.HOME, 'zylos/components/<component>/config.json');
+const input = await new Promise((resolve, reject) => {
+  let data = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', chunk => { data += chunk; });
+  process.stdin.on('end', () => resolve(data));
+  process.stdin.on('error', reject);
+});
+
+const collected = JSON.parse(input);
+const config = fs.existsSync(configPath)
+  ? JSON.parse(fs.readFileSync(configPath, 'utf8'))
+  : { enabled: true };
+
+for (const [key, value] of Object.entries(collected)) {
+  config[key.toLowerCase()] = value;
+}
+
+fs.mkdirSync(path.dirname(configPath), { recursive: true });
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+console.log('[configure] Complete!');
+```
+
+### 5.3 post-install.js
 
 Executed after installation, used for:
 - Creating data subdirectories
 - Generating default config file
-- Checking environment variables
+- Checking config.json fields
 - Configuring PM2 service
 
 ```javascript
@@ -254,13 +294,13 @@ if (!fs.existsSync(configPath)) {
 console.log('[post-install] Complete!');
 ```
 
-### 5.3 pre-upgrade.js
+### 5.4 pre-upgrade.js
 
 Executed before upgrade, used for:
 - Backing up critical data
 - Validating upgrade prerequisites
 
-### 5.4 post-upgrade.js
+### 5.5 post-upgrade.js
 
 Executed after upgrade, used for:
 - Config schema migrations
@@ -308,7 +348,7 @@ console.log('[post-upgrade] Complete!');
 
 ### 6.2 Secrets
 
-Secrets live in `config.json` alongside runtime config. Mark sensitive fields with `sensitive: true` in SKILL.md `config.required` to enable future vault integration:
+Secrets live in `config.json` alongside runtime config. Mark sensitive fields with `sensitive: true` in SKILL.md `config.required` and declare `lifecycle.hooks.configure` so zylos can collect values and hand them to the component for storage:
 
 ```json
 {
@@ -319,6 +359,8 @@ Secrets live in `config.json` alongside runtime config. Mark sensitive fields wi
 ```
 
 Components read secrets from `config.json` — they never need to know the secret's origin. When vault is introduced, the platform layer populates `config.json` from vault; component code stays unchanged.
+
+Legacy components without `lifecycle.hooks.configure` remain supported by zylos-core's `.env` compatibility path. New components should use the configure hook so the component owns its storage format.
 
 ---
 

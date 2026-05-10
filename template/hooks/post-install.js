@@ -2,14 +2,14 @@
 /**
  * Post-install hook for zylos-{{COMPONENT_NAME}}
  *
- * Called by Claude after CLI installation (zylos add --json).
+ * Called by zylos after configure hook and CLI installation.
  * CLI handles: download, npm install, manifest, registration.
- * Claude handles: config collection, this hook, service start.
+ * zylos/agent handles: config collection, configure hook, this hook, service start.
  *
  * This hook handles component-specific setup:
  * - Create subdirectories
- * - Create default config.json
- * - Verify required config fields
+ * - Create default config.json when no configure hook values were provided
+ * - Verify required config fields if needed
  */
 
 import fs from 'fs';
