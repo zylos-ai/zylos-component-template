@@ -229,6 +229,7 @@ Contract:
 - The component owns storage and should write to `~/zylos/components/<component>/config.json`.
 - Sensitive values must not be printed.
 - Exit non-zero if input is invalid or config cannot be written.
+- If the configure hook exits non-zero, zylos logs a warning and continues installation. The component may still need manual configuration before service start succeeds.
 
 ```javascript
 #!/usr/bin/env node
