@@ -256,24 +256,7 @@ Anti-pattern: `delete config.bot; delete config.proxy; delete config.webhook_por
 in a single migration with no backup. If the user had hand-tuned values, they
 are gone forever. Always preserve under `_legacy_*` even for "obsolete" fields.
 
-#### 3. Atomic writes only
-
-Use tmp + rename (`fs.renameSync`) for any config-file mutation. In-place
-`writeFileSync` truncates the file before re-writing it; a crash mid-write
-(power loss, OOM, SIGKILL from a watchdog) leaves a half-written or empty
-config and the service won't restart.
-
-```js
-import { randomUUID } from 'crypto';
-
-function atomicWriteJson(path, obj) {
-  const tmp = `${path}.${randomUUID()}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), { mode: 0o600 });
-  fs.renameSync(tmp, path);
-}
-```
-
-#### 4. Hard-fail on real errors, never swallow
+#### 3. Hard-fail on real errors, never swallow
 
 Distinguish "expected idle state" (already migrated, no-op) from "real
 failure" (unparseable config, fs error, missing dependency). Real failures
@@ -283,7 +266,7 @@ must `process.exit(1)`:
 try {
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
   // ... migrations ...
-  if (migrated) atomicWriteJson(configPath, config);
+  if (migrated) fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 } catch (err) {
   console.error(`[<name>] post-upgrade failed:`, err.message);
   process.exit(1);  // never `console.warn` and return
@@ -299,7 +282,7 @@ credentials not yet configured): log a warning, return early with a
 structured value the caller can inspect, but never crash the rest of the
 hook on it.
 
-#### 5. Scope: config + filesystem, nothing else
+#### 4. Scope: config + filesystem, nothing else
 
 Post-upgrade hooks must not:
 
@@ -315,22 +298,7 @@ If your component genuinely needs one of these operations, put it in
 the install step is itself idempotent. `post-upgrade.js` should be a pure
 config/data migration.
 
-#### 6. HOME resolution
-
-Always resolve HOME via `os.homedir()`, not `process.env.HOME`. Hooks may
-run under a sanitized environment (CI, systemd unit, future auto-dispatch
-from zylos-core) where `process.env.HOME` is unset; `os.homedir()` falls
-back to the process's effective user.
-
-```js
-import os from 'os';
-import path from 'path';
-
-const HOME = os.homedir();
-const DATA_DIR = path.join(HOME, 'zylos/components/<name>');
-```
-
-#### 7. Re-executable across all directions
+#### 5. Re-executable across all directions
 
 A `post-upgrade.js` must handle these scenarios without surprise:
 
@@ -344,25 +312,17 @@ A `post-upgrade.js` must handle these scenarios without surprise:
 Don't gate migrations on `package.json` version comparisons. Gate them on
 the actual shape of the data: "does the new field exist? if not, add it."
 
-#### 8. Canonical post-upgrade.js skeleton
+#### 6. Canonical post-upgrade.js skeleton
 
 ```js
 #!/usr/bin/env node
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
-import { randomUUID } from 'crypto';
 
 const LOG_PREFIX = '[<component>]';
-const HOME = os.homedir();
+const HOME = process.env.HOME;
 const DATA_DIR = path.join(HOME, 'zylos/components/<component>');
 const configPath = path.join(DATA_DIR, 'config.json');
-
-function atomicWriteJson(p, obj) {
-  const tmp = `${p}.${randomUUID()}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), { mode: 0o600 });
-  fs.renameSync(tmp, p);
-}
 
 console.log(`${LOG_PREFIX} Running post-upgrade migrations...`);
 
@@ -392,7 +352,7 @@ try {
   }
 
   if (migrated) {
-    atomicWriteJson(configPath, config);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     console.log(`${LOG_PREFIX} Applied migrations:`);
     migrations.forEach((m) => console.log(`  - ${m}`));
   } else {
@@ -417,11 +377,9 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] post-install.js creates data directory and default config
 - [ ] post-upgrade.js handles config migrations
 - [ ] post-upgrade.js is idempotent (rerun on already-migrated config is a no-op)
-- [ ] post-upgrade.js uses atomic writes (tmp + rename) for any config mutation
 - [ ] post-upgrade.js preserves removed/renamed fields under `_legacy_*`
 - [ ] post-upgrade.js exits non-zero on real errors (never silently swallow)
 - [ ] post-upgrade.js does not start daemons, install global packages, or `rm -rf` without snapshot
-- [ ] Hooks resolve HOME via `os.homedir()` (not `process.env.HOME`)
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
 - [ ] (communication) scripts/send.js sends text and media
 - [ ] (communication) Messages forwarded to C4 in correct format
