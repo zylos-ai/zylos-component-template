@@ -53,6 +53,10 @@ Edit `~/zylos/components/{{COMPONENT_NAME}}/config.json`:
 # Example usage
 ```
 
+## Design Notes
+
+Development-time architecture notes live in [docs/DESIGN.md](./docs/DESIGN.md).
+
 ## Built by Coco
 
 Zylos is the open-source core of [Coco](https://coco.xyz/) — the AI employee platform.

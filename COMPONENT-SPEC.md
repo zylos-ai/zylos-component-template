@@ -34,6 +34,8 @@ This document defines the development specification for Zylos components, based 
 ├── .gitignore            # Git ignore rules
 ├── package.json          # Dependencies
 ├── ecosystem.config.cjs  # PM2 config (if service, CommonJS required by PM2)
+├── docs/                 # Development and design documents, not agent-facing runtime context
+│   └── DESIGN.md         # Architecture/design notes for maintainers and reviews
 ├── scripts/
 │   └── send.js           # C4 send interface (communication only)
 ├── hooks/                # Lifecycle hooks
