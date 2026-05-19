@@ -52,7 +52,7 @@ template/
   hooks/                  生命周期钩子（安装、升级）
   SKILL.md                组件元数据（Zylos CLI 读取）
   ecosystem.config.cjs    PM2 服务配置
-  DESIGN.md               架构设计文档模板
+  docs/DESIGN.md          架构设计文档模板
 ```
 
 ## 文档

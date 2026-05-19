@@ -54,7 +54,7 @@ template/
   hooks/                  Lifecycle hooks (install, upgrade)
   SKILL.md                Component metadata for Zylos CLI
   ecosystem.config.cjs    PM2 service config
-  DESIGN.md               Architecture document template
+  docs/DESIGN.md          Architecture document template
 ```
 
 ## Documentation

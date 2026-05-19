@@ -18,6 +18,8 @@ Brief description of what this component does and why it exists.
 
 ```
 zylos-{{COMPONENT_NAME}}/
+  docs/
+    DESIGN.md         — Architecture/design notes for maintainers and reviews
   src/
     index.js          — Entry point (start/stop lifecycle)
     lib/              — Core logic modules
