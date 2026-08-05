@@ -211,6 +211,43 @@ HTTP components with `http_routes.strip_prefix` must include tests for:
 - Rejection of unsafe `X-Forwarded-Prefix` values, including protocol-relative prefixes (`//evil.test`), query/fragment injection, and HTML metacharacters.
 - Rejection of unsafe `next` targets, including absolute URLs, paths outside the current prefix, and dot-segment escapes such as `/<component>/../admin`.
 - Cache invalidation across all browser-base variants when rendered HTML is browser-base-specific.
+- `X-Robots-Tag: noindex, nofollow` present on page responses AND error responses (see 4.5).
+- `<meta name="robots" content="noindex, nofollow">` present in rendered HTML, including 404/error pages (see 4.5).
+- `GET /robots.txt` returns a disallow-all policy (see 4.5).
+
+### 4.5 Search Engine Isolation (noindex)
+
+Zylos components are internal tools by default. Any browser-facing HTTP component
+MUST prevent search engine indexing at the mechanism level — enforced by the
+component itself, never dependent on content authors remembering to add tags.
+Shared links, no-login member links, and tokened URLs are the motivating threat:
+once indexed, an internal page becomes publicly searchable.
+
+Required, all three layers:
+
+1. **Response header**: every HTTP response carries
+   `X-Robots-Tag: noindex, nofollow`, set in a global middleware alongside other
+   security headers (covers HTML, JSON, assets, and error responses).
+2. **HTML meta**: every HTML template — including 404 and error templates —
+   includes `<meta name="robots" content="noindex, nofollow">` in `<head>`.
+3. **robots.txt**: the component serves `/robots.txt`:
+
+   ```
+   User-agent: *
+   Disallow: /
+   ```
+
+Notes:
+
+- Non-HTTP surfaces (WebSocket, raw TCP relays) are out of scope; do not alter
+  their behavior.
+- The header layer is authoritative; meta and robots.txt are defense in depth
+  (robots.txt alone does not prevent indexing of already-known URLs).
+- **Exception**: a component whose explicit purpose is publicly indexable
+  content may omit this, and must state that exception and its rationale in
+  SKILL.md and README.md. Absence of a statement means isolation is required.
+
+Reference implementation: [zylos-pages#123](https://github.com/zylos-ai/zylos-pages/pull/123).
 
 ---
 
@@ -474,6 +511,7 @@ Upgrade notes
 - [ ] hooks/post-install.js correctly creates data directory and config
 - [ ] hooks/post-upgrade.js handles config migrations
 - [ ] Browser-facing HTTP routes support both direct localhost access and Caddy proxy access
+- [ ] Browser-facing HTTP responses carry search engine isolation (X-Robots-Tag header + robots meta + robots.txt), unless the component is explicitly declared public-indexable
 - [ ] Configuration separated from code (config.json in data directory)
 - [ ] PM2 can manage start/stop (if service)
 - [ ] `zylos add <component>` completes installation in fresh environment
