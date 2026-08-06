@@ -175,6 +175,7 @@ For components with a browser-facing HTTP service, make the app root-internal an
 - **Treat `X-Forwarded-Prefix` as untrusted input**. Accept only a clean path prefix: no query/fragment, whitespace/control chars, backslashes, protocol-like or protocol-relative strings, dot segments, percent-encoded input, or HTML metacharacters. Invalid values must fall back to direct-local relative URLs.
 - **Validate redirect targets by browser base**. `next` and similar redirect params must not accept arbitrary absolute URLs, dot-segment escapes such as `/<component>/../admin`, or paths outside the current browser base.
 - **Keep caches keyed and invalidated by browser base**. If rendered HTML includes browser-base-specific links, either avoid caching that HTML across bases or invalidate every browser-base variant when the underlying resource changes.
+- **Block search engine indexing by default**. Components are internal tools; enforce isolation at the mechanism level with all three layers: a global middleware adding `X-Robots-Tag: noindex, nofollow` to every response, `<meta name="robots" content="noindex, nofollow">` in every HTML template (including 404/error pages), and a `/robots.txt` that disallows all. Only a component explicitly built for public, indexable content may omit this — and must say so in SKILL.md and README.md. See COMPONENT-SPEC.md §4.5.
 - **Test both access modes and hostile inputs**: direct local access (`http://127.0.0.1:<port>/`), proxied access simulated with `X-Forwarded-Prefix: /<component>`, unsafe forwarded prefixes, and unsafe redirect `next` values.
 
 Example SKILL.md route:
@@ -380,6 +381,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] post-upgrade.js preserves removed/renamed fields under `_legacy_*`
 - [ ] post-upgrade.js exits non-zero on real errors (never silently swallow)
 - [ ] post-upgrade.js does not start daemons, install global packages, or `rm -rf` without snapshot
+- [ ] (HTTP) Every response carries `X-Robots-Tag: noindex, nofollow`; HTML (incl. error pages) has robots meta; `/robots.txt` disallows all — unless explicitly declared public-indexable
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
 - [ ] (communication) scripts/send.js sends text and media
 - [ ] (communication) Messages forwarded to C4 in correct format
