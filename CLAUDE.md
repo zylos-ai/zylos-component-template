@@ -34,6 +34,12 @@ CHANGELOG entry format:
 
 After merge, create a GitHub Release with tag `vX.Y.Z` from the merge commit.
 
+This rule ships with the scaffold: `template/AGENTS.md` carries it into every
+generated component (with `template/CLAUDE.md` pointing there), and
+`template/test/release-consistency.test.js` machine-enforces it — the suite
+fails whenever package.json, package-lock.json, SKILL.md frontmatter, and the
+CHANGELOG's latest released header disagree.
+
 ## Quick Start
 
 ### Step 1: Copy Template
@@ -369,6 +375,8 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 
 ## Acceptance Checklist
 
+- [ ] CLAUDE.md and AGENTS.md present (propagated from `template/`; component-localized as needed)
+- [ ] `npm test` passes, including `test/release-consistency.test.js` (four version faces agree, negative controls intact)
 - [ ] SKILL.md frontmatter complete (name, version, type, lifecycle, upgrade)
 - [ ] SKILL.md description includes trigger patterns (what + when to use)
 - [ ] SKILL.md body has concise usage examples only
