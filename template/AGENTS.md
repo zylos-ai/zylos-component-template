@@ -28,9 +28,12 @@ Version bump commit message: `chore: bump version to X.Y.Z`
 
 After merge, create a GitHub Release with tag `vX.Y.Z` from the merge commit.
 
-This rule is machine-enforced: `test/release-consistency.test.js` fails the
-suite whenever the four version faces disagree. Keep that test passing and
-keep its negative controls intact — a gate that cannot fail proves nothing.
+Machine gate vs process gate: `test/release-consistency.test.js` enforces the
+**final-tree** half of this rule only — the suite fails whenever the four
+version faces disagree in the working tree. The dedicated-release-PR and
+same-commit requirements are process gates, guaranteed by the release flow
+and review, not provable by this test. Keep the test passing and keep its
+negative controls intact — a gate that cannot fail proves nothing.
 
 ## Testing
 

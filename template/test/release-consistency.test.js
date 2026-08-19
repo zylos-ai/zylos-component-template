@@ -7,9 +7,11 @@ import test from 'node:test';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // Release rule (AGENTS.md, "Release Process"): a release bumps four files in
-// the same commit. These parsers + checker are pure so the suite can also run
-// permanent negative controls against known-bad fixtures — the gate itself is
-// tested and provably able to fail.
+// the same commit. This gate enforces the final-tree half only — the version
+// faces below must agree in the working tree; the dedicated-PR / same-commit
+// discipline is a process gate, not provable here. Parsers + checker are pure
+// so the suite also runs permanent negative controls against known-bad
+// fixtures — the gate itself is tested and provably able to fail.
 
 function parseSkillVersion(skillMd) {
   const fm = skillMd.match(/^---\n([\s\S]*?)\n---/);

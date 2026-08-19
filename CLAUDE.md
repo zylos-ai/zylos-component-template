@@ -36,9 +36,11 @@ After merge, create a GitHub Release with tag `vX.Y.Z` from the merge commit.
 
 This rule ships with the scaffold: `template/AGENTS.md` carries it into every
 generated component (with `template/CLAUDE.md` pointing there), and
-`template/test/release-consistency.test.js` machine-enforces it — the suite
-fails whenever package.json, package-lock.json, SKILL.md frontmatter, and the
-CHANGELOG's latest released header disagree.
+`template/test/release-consistency.test.js` machine-enforces its final-tree
+consistency — the suite fails whenever package.json, package-lock.json,
+SKILL.md frontmatter, and the CHANGELOG's latest released header disagree in
+the working tree. The dedicated-release-PR / same-commit discipline is a
+process gate guaranteed by the release flow and review, not by the test.
 
 ## Quick Start
 
