@@ -78,7 +78,7 @@ template/
 
 ## 由 OpenMax 构建
 
-Zylos 是 [OpenMax](https://openmax.com/)（AI 员工平台）的开源核心基础设施。
+Zylos 是 [OpenMax](https://openmax.com/)（Human × Agent 协作平台）的开源核心基础设施。
 
 我们构建 Zylos 是因为我们自己需要它：可靠的基础设施，让 AI 智能体 24/7 稳定运行。每个组件都在 OpenMax 生产环境中经过实战检验，服务于每天依赖 AI 员工的团队。
 

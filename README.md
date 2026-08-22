@@ -80,7 +80,7 @@ See [Contributing Guide](https://github.com/zylos-ai/.github/blob/main/CONTRIBUT
 
 ## Built by OpenMax
 
-Zylos is the open-source core of [OpenMax](https://openmax.com/) — the AI employee platform.
+Zylos is the open-source core of [OpenMax](https://openmax.com/) — the Human × Agent Collaboration Platform.
 
 We built Zylos because we needed it ourselves: reliable infrastructure to keep AI agents running 24/7 on real work. Every component is battle-tested in production at OpenMax, serving teams that depend on their AI employees every day.
 

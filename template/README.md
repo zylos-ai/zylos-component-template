@@ -59,7 +59,7 @@ Development-time architecture notes live in [docs/DESIGN.md](./docs/DESIGN.md).
 
 ## Built by OpenMax
 
-Zylos is the open-source core of [OpenMax](https://openmax.com/) — the AI employee platform.
+Zylos is the open-source core of [OpenMax](https://openmax.com/) — the Human × Agent Collaboration Platform.
 
 ## License
 
