@@ -14,7 +14,7 @@
   <a href="https://discord.gg/GS2J39EGff"><img src="https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white" alt="Discord"></a>
   <a href="https://x.com/ZylosAI"><img src="https://img.shields.io/badge/X-follow-000000?logo=x&logoColor=white" alt="X"></a>
   <a href="https://zylos.ai"><img src="https://img.shields.io/badge/website-zylos.ai-blue" alt="Website"></a>
-  <a href="https://coco.xyz"><img src="https://img.shields.io/badge/Built%20by-Coco-orange" alt="Built by Coco"></a>
+  <a href="https://openmax.com"><img src="https://img.shields.io/badge/Built%20by-OpenMax-orange" alt="Built by OpenMax"></a>
 </p>
 
 <p align="center">
@@ -76,13 +76,13 @@ template/
 
 请查看[贡献指南](https://github.com/zylos-ai/.github/blob/main/CONTRIBUTING.md)。
 
-## 由 Coco 构建
+## 由 OpenMax 构建
 
-Zylos 是 [Coco](https://coco.xyz/)（AI 员工平台）的开源核心基础设施。
+Zylos 是 [OpenMax](https://openmax.com/)（AI 员工平台）的开源核心基础设施。
 
-我们构建 Zylos 是因为我们自己需要它：可靠的基础设施，让 AI 智能体 24/7 稳定运行。每个组件都在 Coco 生产环境中经过实战检验，服务于每天依赖 AI 员工的团队。
+我们构建 Zylos 是因为我们自己需要它：可靠的基础设施，让 AI 智能体 24/7 稳定运行。每个组件都在 OpenMax 生产环境中经过实战检验，服务于每天依赖 AI 员工的团队。
 
-想要开箱即用？[Coco](https://coco.xyz/) 提供即开即用的 AI 员工——持久记忆、多渠道沟通、技能包——5 分钟完成部署。
+想要开箱即用？[OpenMax](https://openmax.com/) 提供即开即用的 AI 员工——持久记忆、多渠道沟通、技能包——5 分钟完成部署。
 
 ## 许可证
 
