@@ -218,7 +218,8 @@ HTTP components with `http_routes.strip_prefix` must include tests for:
 HTTP components with WebSocket or SSE endpoints must also include tests for (see 4.6):
 
 - Unauthenticated stream requests are rejected (WebSocket: plain HTTP status before the upgrade completes).
-- (WebSocket) A cookie-authenticated handshake from a foreign `Origin` without a valid ticket or allowlisted origin is rejected; a handshake carrying `Sec-Fetch-Site: cross-site` is rejected even with a ticket.
+- (WebSocket) A cookie-authenticated handshake from a foreign `Origin` without a valid ticket or allowlisted origin is rejected.
+- (WebSocket) A handshake carrying any `Sec-Fetch-Site` value other than `same-origin` (including `same-site` from a sibling subdomain) is rejected even with a valid ticket.
 - (WebSocket) A legitimate browser handshake succeeds when `Host` is rewritten by the proxy (e.g. `Host: localhost` with the public `Origin`) and no `Sec-Fetch-*` headers are sent.
 - (WebSocket, if tickets are used) Expired, forged, and replayed tickets are rejected.
 - (SSE) The response carries `Content-Type: text/event-stream` and `Cache-Control: no-store`, is not compressed, and emits heartbeats.
@@ -272,10 +273,10 @@ upgrades and streams SSE without extra route configuration.
 1. **Root-internal endpoint, browser-base URL**: mount the endpoint at an internal path such as `/ws` or `/events` and build its browser URL from the browser base (4.3), never from a hardcoded host, port, scheme, or `/<component>` prefix. For WebSocket, derive the scheme from the page: `https:` → `wss:`, `http:` → `ws:`.
 2. **Authenticate every connection**: run the same auth as the HTTP API before the stream opens. A component behind Caddy is reachable from the public domain, so an unauthenticated stream is a public data feed.
 3. **No long-lived secrets in URLs**: do not put session tokens, API keys, or passwords in the stream URL or query string — access logs and proxies record URLs. Use the session cookie, an `Authorization` header (non-browser clients), or a short-lived single-use ticket (see WebSocket rule 2).
-4. **Heartbeat below proxy idle timeouts**: send a heartbeat at most every 30 seconds so idle streams are not cut by proxies or the platform edge, and so dead peers are detected.
+4. **Heartbeat below proxy idle timeouts**: send a heartbeat at least once every 30 seconds so idle streams are not cut by proxies or the platform edge, and so dead peers are detected.
 5. **Clean up on disconnect**: when the client goes away (`close` on the socket or request), clear timers, unsubscribe listeners, and release per-connection resources. Leaked intervals and listeners in a long-running PM2 service accumulate until the process degrades.
 6. **Bound resources**: cap concurrent connections (per principal and in total) and apply backpressure — when a client cannot keep up, drop or coalesce updates or close the connection instead of buffering without limit.
-7. **Client reconnect**: the browser client reconnects with exponential backoff plus jitter, and resynchronizes state after reconnecting (full snapshot or resume from the last seen event).
+7. **Client reconnect**: the browser client reconnects with exponential backoff plus jitter, and resynchronizes state after reconnecting (full snapshot or resume from the last seen event). Disconnects are routine, not just failure handling: by default a Caddy config reload closes all proxied long-lived connections immediately, and installing or upgrading any component reloads Caddy.
 8. **Graceful shutdown**: on SIGTERM/SIGINT (PM2 restart or upgrade), close streams cleanly — WebSocket close code `1001` (going away), end SSE responses — so clients reconnect promptly instead of waiting for a timeout.
 
 **WebSocket rules:**
@@ -285,9 +286,9 @@ upgrades and streams SSE without extra route configuration.
    - Do **not** treat `Origin` matching `Host` as the only proof of same-origin. Reverse proxies may rewrite `Host` (some Zylos deployments forward public traffic with `Host: localhost`), so a legitimate browser fails that comparison.
    - Do **not** rely on Fetch Metadata alone. Chromium sends no `Sec-Fetch-*` headers on WebSocket handshakes, while Safari does.
    - Use an explicit mechanism that survives a rewritten `Host`: an allowlist of configured browser origins, or a **short-lived, single-use ticket** minted by an authenticated, origin-checked HTTP endpoint, bound to the principal and the target resource, and presented in the handshake via `Sec-WebSocket-Protocol` (not the URL). Reject the ticket once it has been used or has expired.
-   - Explicit cross-site evidence (`Sec-Fetch-Site: cross-site`, an `Origin` outside the allowlist) is always rejected, even with a ticket.
+   - When the handshake carries `Sec-Fetch-Site`, accept it only if the value is `same-origin`; any other value (`same-site`, `cross-site`, `none`) is rejected, even with a ticket. A ticket may substitute for the origin check only when `Sec-Fetch-Site` is absent (Chromium's WebSocket handshake). An `Origin` outside a configured allowlist is always rejected.
    - Bearer-token (non-browser) handshakes are not subject to the origin check.
-3. **Validate subprotocols**: accept only the exact subprotocol tokens the component defines, and reject unknown or repeated tokens.
+3. **Validate subprotocols**: accept only the exact subprotocol tokens the component defines, and reject unknown or repeated tokens. The `Sec-WebSocket-Protocol` response header echoes only the component's fixed protocol name — never a ticket or lease token.
 4. **Limit message size**: set a maximum inbound message size (e.g. `maxPayload` in `ws`) and validate every inbound message as untrusted input.
 5. **Ping/pong liveness**: the server sends protocol-level pings and terminates connections that miss a pong within the heartbeat window.
 6. **Backpressure**: check the socket's buffered amount before sending; skip or coalesce frames for slow consumers, and close connections whose buffer stays over a limit.
