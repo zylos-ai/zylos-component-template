@@ -215,6 +215,15 @@ HTTP components with `http_routes.strip_prefix` must include tests for:
 - `<meta name="robots" content="noindex, nofollow">` present in rendered HTML, including 404/error pages (see 4.5).
 - `GET /robots.txt` returns a disallow-all policy (see 4.5).
 
+HTTP components with WebSocket or SSE endpoints must also include tests for (see 4.6):
+
+- Unauthenticated stream requests are rejected (WebSocket: plain HTTP status before the upgrade completes).
+- (WebSocket) A cookie-authenticated handshake from a foreign `Origin` without a valid ticket or allowlisted origin is rejected; a handshake carrying `Sec-Fetch-Site: cross-site` is rejected even with a ticket.
+- (WebSocket) A legitimate browser handshake succeeds when `Host` is rewritten by the proxy (e.g. `Host: localhost` with the public `Origin`) and no `Sec-Fetch-*` headers are sent.
+- (WebSocket, if tickets are used) Expired, forged, and replayed tickets are rejected.
+- (SSE) The response carries `Content-Type: text/event-stream` and `Cache-Control: no-store`, is not compressed, and emits heartbeats.
+- Per-connection timers and listeners are released when the client disconnects.
+
 ### 4.5 Search Engine Isolation (noindex)
 
 Zylos components are internal tools by default. Any browser-facing HTTP component
@@ -248,6 +257,52 @@ Notes:
   SKILL.md and README.md. Absence of a statement means isolation is required.
 
 Reference implementation: [zylos-pages#123](https://github.com/zylos-ai/zylos-pages/pull/123).
+
+### 4.6 Long-Lived Connections (WebSocket and SSE)
+
+Components that push live data to the browser use WebSocket (bidirectional) or
+Server-Sent Events (server → browser only; prefer SSE when the browser never
+sends on the stream). Both run behind the same Caddy route and must follow the
+routing rules in 4.2–4.4 plus the rules below. SSE responses are ordinary HTTP
+responses and keep the 4.5 headers; WebSocket handshakes stay out of 4.5's scope. Caddy's `reverse_proxy` passes WebSocket
+upgrades and streams SSE without extra route configuration.
+
+**Shared rules (WebSocket and SSE):**
+
+1. **Root-internal endpoint, browser-base URL**: mount the endpoint at an internal path such as `/ws` or `/events` and build its browser URL from the browser base (4.3), never from a hardcoded host, port, scheme, or `/<component>` prefix. For WebSocket, derive the scheme from the page: `https:` → `wss:`, `http:` → `ws:`.
+2. **Authenticate every connection**: run the same auth as the HTTP API before the stream opens. A component behind Caddy is reachable from the public domain, so an unauthenticated stream is a public data feed.
+3. **No long-lived secrets in URLs**: do not put session tokens, API keys, or passwords in the stream URL or query string — access logs and proxies record URLs. Use the session cookie, an `Authorization` header (non-browser clients), or a short-lived single-use ticket (see WebSocket rule 2).
+4. **Heartbeat below proxy idle timeouts**: send a heartbeat at most every 30 seconds so idle streams are not cut by proxies or the platform edge, and so dead peers are detected.
+5. **Clean up on disconnect**: when the client goes away (`close` on the socket or request), clear timers, unsubscribe listeners, and release per-connection resources. Leaked intervals and listeners in a long-running PM2 service accumulate until the process degrades.
+6. **Bound resources**: cap concurrent connections (per principal and in total) and apply backpressure — when a client cannot keep up, drop or coalesce updates or close the connection instead of buffering without limit.
+7. **Client reconnect**: the browser client reconnects with exponential backoff plus jitter, and resynchronizes state after reconnecting (full snapshot or resume from the last seen event).
+8. **Graceful shutdown**: on SIGTERM/SIGINT (PM2 restart or upgrade), close streams cleanly — WebSocket close code `1001` (going away), end SSE responses — so clients reconnect promptly instead of waiting for a timeout.
+
+**WebSocket rules:**
+
+1. **Reject before upgrading**: perform auth and origin checks in the HTTP `upgrade` handler and refuse with a plain HTTP status (`401`, `403`, `404`) before completing the handshake. Do not accept the upgrade and close it afterwards.
+2. **Check the browser origin explicitly (Cross-Site WebSocket Hijacking)**: browsers send cookies with WebSocket handshakes and CORS does not apply, so any website can open a cookie-authenticated socket to your component unless the server checks where the handshake came from. For cookie-authenticated handshakes:
+   - Do **not** treat `Origin` matching `Host` as the only proof of same-origin. Reverse proxies may rewrite `Host` (some Zylos deployments forward public traffic with `Host: localhost`), so a legitimate browser fails that comparison.
+   - Do **not** rely on Fetch Metadata alone. Chromium sends no `Sec-Fetch-*` headers on WebSocket handshakes, while Safari does.
+   - Use an explicit mechanism that survives a rewritten `Host`: an allowlist of configured browser origins, or a **short-lived, single-use ticket** minted by an authenticated, origin-checked HTTP endpoint, bound to the principal and the target resource, and presented in the handshake via `Sec-WebSocket-Protocol` (not the URL). Reject the ticket once it has been used or has expired.
+   - Explicit cross-site evidence (`Sec-Fetch-Site: cross-site`, an `Origin` outside the allowlist) is always rejected, even with a ticket.
+   - Bearer-token (non-browser) handshakes are not subject to the origin check.
+3. **Validate subprotocols**: accept only the exact subprotocol tokens the component defines, and reject unknown or repeated tokens.
+4. **Limit message size**: set a maximum inbound message size (e.g. `maxPayload` in `ws`) and validate every inbound message as untrusted input.
+5. **Ping/pong liveness**: the server sends protocol-level pings and terminates connections that miss a pong within the heartbeat window.
+6. **Backpressure**: check the socket's buffered amount before sending; skip or coalesce frames for slow consumers, and close connections whose buffer stays over a limit.
+
+**SSE rules:**
+
+1. **Response headers**: `Content-Type: text/event-stream`, `Cache-Control: no-store`, and `X-Accel-Buffering: no`, plus the global `X-Robots-Tag` header from 4.5.
+2. **No compression or buffering on the stream**: exclude `text/event-stream` responses from compression middleware and flush after every event — compression and buffering hold events back until a chunk fills.
+3. **Comment heartbeats**: send a comment line (`: ping`) followed by a blank line at least every 30 seconds.
+4. **Resumable events**: give events an `id:` and honor the `Last-Event-ID` request header on reconnect; if the server cannot resume from that id, send an explicit resync event telling the client to reload a full snapshot. Set `retry:` to a sensible reconnect delay.
+5. **Same-origin cookie auth**: `EventSource` cannot set request headers, so browser SSE uses the session cookie on a same-origin URL. Do not enable credentialed CORS for the stream.
+6. **One stream per page**: browsers allow only about six HTTP/1.1 connections per origin. Multiplex event types over a single stream per page instead of opening one stream per widget.
+
+Reference implementation (WebSocket ticket behind a `Host`-rewriting proxy):
+[zylos-dashboard#327](https://github.com/zylos-ai/zylos-dashboard/pull/327).
 
 ---
 
@@ -512,6 +567,7 @@ Upgrade notes
 - [ ] hooks/post-upgrade.js handles config migrations
 - [ ] Browser-facing HTTP routes support both direct localhost access and Caddy proxy access
 - [ ] Browser-facing HTTP responses carry search engine isolation (X-Robots-Tag header + robots meta + robots.txt), unless the component is explicitly declared public-indexable
+- [ ] WebSocket/SSE endpoints authenticate every connection, keep secrets out of URLs, send heartbeats, clean up on disconnect, and (WebSocket) check the browser origin explicitly without relying on `Origin` == `Host` (see 4.6)
 - [ ] Configuration separated from code (config.json in data directory)
 - [ ] PM2 can manage start/stop (if service)
 - [ ] `zylos add <component>` completes installation in fresh environment

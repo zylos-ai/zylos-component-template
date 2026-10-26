@@ -184,6 +184,7 @@ For components with a browser-facing HTTP service, make the app root-internal an
 - **Validate redirect targets by browser base**. `next` and similar redirect params must not accept arbitrary absolute URLs, dot-segment escapes such as `/<component>/../admin`, or paths outside the current browser base.
 - **Keep caches keyed and invalidated by browser base**. If rendered HTML includes browser-base-specific links, either avoid caching that HTML across bases or invalidate every browser-base variant when the underlying resource changes.
 - **Block search engine indexing by default**. Components are internal tools; enforce isolation at the mechanism level with all three layers: a global middleware adding `X-Robots-Tag: noindex, nofollow` to every response, `<meta name="robots" content="noindex, nofollow">` in every HTML template (including 404/error pages), and a `/robots.txt` that disallows all. Only a component explicitly built for public, indexable content may omit this — and must say so in SKILL.md and README.md. See COMPONENT-SPEC.md §4.5.
+- **Secure and keep alive WebSocket/SSE streams**. Mount stream endpoints root-internally and build their URLs from the browser base (WebSocket scheme from the page: `https:` → `wss:`). Authenticate every connection; never put long-lived tokens in the URL. For cookie-authenticated WebSocket handshakes, check the browser origin explicitly in the `upgrade` handler and reject with an HTTP status before upgrading — do not rely on `Origin` == `Host` (proxies may rewrite `Host`) or on `Sec-Fetch-*` (Chromium omits them on WebSocket handshakes); use an origin allowlist or a short-lived single-use ticket sent via `Sec-WebSocket-Protocol`. Send heartbeats at most every 30s, release timers/listeners on disconnect, cap connections and apply backpressure, close with `1001` on shutdown, and reconnect with backoff on the client. SSE: `text/event-stream`, `Cache-Control: no-store`, no compression, `id:` + `Last-Event-ID` resume, one stream per page. See COMPONENT-SPEC.md §4.6.
 - **Test both access modes and hostile inputs**: direct local access (`http://127.0.0.1:<port>/`), proxied access simulated with `X-Forwarded-Prefix: /<component>`, unsafe forwarded prefixes, and unsafe redirect `next` values.
 
 Example SKILL.md route:
@@ -392,6 +393,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] post-upgrade.js exits non-zero on real errors (never silently swallow)
 - [ ] post-upgrade.js does not start daemons, install global packages, or `rm -rf` without snapshot
 - [ ] (HTTP) Every response carries `X-Robots-Tag: noindex, nofollow`; HTML (incl. error pages) has robots meta; `/robots.txt` disallows all — unless explicitly declared public-indexable
+- [ ] (HTTP) WebSocket/SSE endpoints authenticate every connection, keep secrets out of URLs, send heartbeats, clean up on disconnect; WebSocket handshakes check the browser origin explicitly (not `Origin` == `Host`) and reject before upgrading
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
 - [ ] (communication) scripts/send.js sends text and media
 - [ ] (communication) Messages forwarded to C4 in correct format
