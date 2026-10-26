@@ -223,7 +223,8 @@ HTTP components with WebSocket or SSE endpoints must also include tests for (see
 - (WebSocket) A legitimate browser handshake succeeds when `Host` is rewritten by the proxy (e.g. `Host: localhost` with the public `Origin`) and no `Sec-Fetch-*` headers are sent.
 - (WebSocket, if tickets are used) Expired, forged, and replayed tickets are rejected.
 - (SSE) The response carries `Content-Type: text/event-stream` and `Cache-Control: no-store`, is not compressed, and emits heartbeats.
-- Per-connection timers and listeners are released when the client disconnects.
+- (SSE) After the request has been fully read, the stream keeps delivering events and heartbeats (cleanup must not fire on request completion).
+- Per-connection timers and listeners are released when the client really disconnects (WebSocket `close`; SSE response `close`).
 
 ### 4.5 Search Engine Isolation (noindex)
 
@@ -274,7 +275,10 @@ upgrades and streams SSE without extra route configuration.
 2. **Authenticate every connection**: run the same auth as the HTTP API before the stream opens. A component behind Caddy is reachable from the public domain, so an unauthenticated stream is a public data feed.
 3. **No long-lived secrets in URLs**: do not put session tokens, API keys, or passwords in the stream URL or query string — access logs and proxies record URLs. Use the session cookie, an `Authorization` header (non-browser clients), or a short-lived single-use ticket (see WebSocket rule 2).
 4. **Heartbeat below proxy idle timeouts**: send a heartbeat at least once every 30 seconds so idle streams are not cut by proxies or the platform edge, and so dead peers are detected.
-5. **Clean up on disconnect**: when the client goes away (`close` on the socket or request), clear timers, unsubscribe listeners, and release per-connection resources. Leaked intervals and listeners in a long-running PM2 service accumulate until the process degrades.
+5. **Clean up on disconnect**: when the client goes away, clear timers, unsubscribe listeners, and release per-connection resources. Leaked intervals and listeners in a long-running PM2 service accumulate until the process degrades. Bind cleanup to the event that really means the connection ended:
+   - **WebSocket**: the WebSocket connection's `close` event.
+   - **SSE (Node `http`)**: the `ServerResponse` `close` event (`res.on('close')`). Do **not** use the request's `close` (`req.on('close')`): since Node 16 it fires once the request has been fully read — for a body-less SSE `GET` that is right after the stream opens — so cleanup bound to it stops heartbeats and subscriptions while the browser still shows a live connection.
+   - Put cleanup in one idempotent function and call it from `close`, `error`, and shutdown alike.
 6. **Bound resources**: cap concurrent connections (per principal and in total) and apply backpressure — when a client cannot keep up, drop or coalesce updates or close the connection instead of buffering without limit.
 7. **Client reconnect**: the browser client reconnects with exponential backoff plus jitter, and resynchronizes state after reconnecting (full snapshot or resume from the last seen event). Disconnects are routine, not just failure handling: by default a Caddy config reload closes all proxied long-lived connections immediately, and installing or upgrading any component reloads Caddy.
 8. **Graceful shutdown**: on SIGTERM/SIGINT (PM2 restart or upgrade), close streams cleanly — WebSocket close code `1001` (going away), end SSE responses — so clients reconnect promptly instead of waiting for a timeout.
@@ -288,7 +292,7 @@ upgrades and streams SSE without extra route configuration.
    - Use an explicit mechanism that survives a rewritten `Host`: an allowlist of configured browser origins, or a **short-lived, single-use ticket** minted by an authenticated, origin-checked HTTP endpoint, bound to the principal and the target resource, and presented in the handshake via `Sec-WebSocket-Protocol` (not the URL). Reject the ticket once it has been used or has expired.
    - When the handshake carries `Sec-Fetch-Site`, accept it only if the value is `same-origin`; any other value (`same-site`, `cross-site`, `none`) is rejected, even with a ticket. A ticket may substitute for the origin check only when `Sec-Fetch-Site` is absent (Chromium's WebSocket handshake). An `Origin` outside a configured allowlist is always rejected.
    - Bearer-token (non-browser) handshakes are not subject to the origin check.
-3. **Validate subprotocols**: accept only the exact subprotocol tokens the component defines, and reject unknown or repeated tokens. The `Sec-WebSocket-Protocol` response header echoes only the component's fixed protocol name — never a ticket or lease token.
+3. **Validate subprotocols**: accept only subprotocol tokens that match the formats the component defines — fixed protocol names exactly, variable tokens such as tickets by a strict pattern — and reject unknown or repeated tokens. The `Sec-WebSocket-Protocol` response header echoes only the component's fixed protocol name — never a ticket or lease token.
 4. **Limit message size**: set a maximum inbound message size (e.g. `maxPayload` in `ws`) and validate every inbound message as untrusted input.
 5. **Ping/pong liveness**: the server sends protocol-level pings and terminates connections that miss a pong within the heartbeat window.
 6. **Backpressure**: check the socket's buffered amount before sending; skip or coalesce frames for slow consumers, and close connections whose buffer stays over a limit.
