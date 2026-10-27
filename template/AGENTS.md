@@ -40,4 +40,15 @@ negative controls intact — a gate that cannot fail proves nothing.
 - `npm test` runs `node --test` over `test/*.test.js`
 - The release-consistency gate (above) ships with the scaffold and must stay
 - When a test guards specific logic, prove it can fail: temporarily break the
-  guarded behavior (a known-bad mutant), confirm the test goes red, restore
+  guarded behavior (a known-bad mutant), confirm the test goes red, restore it
+- **Tests never ship to users.** zylos installs components from the GitHub
+  source archive, and `.gitattributes` marks `test/` (plus any `__tests__/` or
+  `*.test.js`) `export-ignore`, so tests and fixtures are left out. Users' security
+  scanners must not find fake tokens or mock binaries in an installed
+  component. Keep that file; do not remove its rules
+- Put all tests, helpers and fixtures under `test/`. Runtime code (`src/`,
+  `scripts/`, `hooks/`) must never import, spawn or read anything in it; only
+  `npm test` and dev tooling may
+- After adding or moving test files, check the archive:
+  `git archive HEAD | tar -t | grep -E '(^|/)(test|__tests__)/|\.test\.js$'`
+  must print nothing
