@@ -32,6 +32,7 @@ This document defines the development specification for Zylos components, based 
 ├── CHANGELOG.md          # Change log (required)
 ├── LICENSE               # Open source license
 ├── .gitignore            # Git ignore rules
+├── .gitattributes        # export-ignore for tests (keeps them out of the install archive)
 ├── package.json          # Dependencies
 ├── ecosystem.config.cjs  # PM2 config (if service, CommonJS required by PM2)
 ├── docs/                 # Development and design documents, not agent-facing runtime context
@@ -42,10 +43,11 @@ This document defines the development specification for Zylos components, based 
 │   ├── post-install.js   # Post-install hook
 │   ├── pre-upgrade.js    # Pre-upgrade hook
 │   └── post-upgrade.js   # Post-upgrade hook
-└── src/                  # Source code
-    ├── index.js          # Main entry point
-    └── lib/              # Module directory
-        └── config.js     # Config loader
+├── src/                  # Source code
+│   ├── index.js          # Main entry point
+│   └── lib/              # Module directory
+│       └── config.js     # Config loader
+└── test/                 # Tests, helpers, fixtures (development-only, never installed)
 ```
 
 ### 2.2 Data Directory
@@ -63,6 +65,7 @@ This document defines the development specification for Zylos components, based 
 2. **Data in Data**: `~/zylos/components/<component>/`
 3. **Secrets in config.json**: `~/zylos/components/<component>/config.json` (mark `sensitive: true` in SKILL.md)
 4. **Code can be overwritten on upgrade, data is preserved**
+5. **Tests never ship**: zylos installs from the GitHub source archive, and `.gitattributes` `export-ignore` keeps `test/` (and any `__tests__/`, `*.test.js`) out of it, so fake tokens and mock binaries in fixtures never reach users' security scanners. Runtime code must not read anything under `test/`
 
 ---
 

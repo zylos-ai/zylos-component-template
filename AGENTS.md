@@ -10,6 +10,7 @@ For the full technical specification, see [COMPONENT-SPEC.md](./COMPONENT-SPEC.m
 - **Node.js 20+** — Minimum runtime version
 - **Conventional commits** — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`
 - **No `files` in package.json** — Rely on `.gitignore` to exclude
+- **Tests never ship** — zylos installs components from the GitHub source archive; keep the scaffold's `.gitattributes` (`export-ignore` for `test/`, `__tests__/`, `*.test.js`) and keep all tests and fixtures under `test/`, never read by runtime code
 - **All config in `config.json`** — Secrets and runtime config both live in `~/zylos/components/<name>/config.json`. This file is in the data directory (never committed to git). Mark sensitive fields with `sensitive: true` in SKILL.md and declare `lifecycle.hooks.configure` so zylos can collect values and pass them to the component for storage
 - **English for code** — Comments, commit messages, PR descriptions, documentation
 
@@ -380,6 +381,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 
 - [ ] CLAUDE.md and AGENTS.md present (propagated from `template/`; component-localized as needed)
 - [ ] `npm test` passes, including `test/release-consistency.test.js` (four version faces agree, negative controls intact)
+- [ ] `.gitattributes` present; `git archive HEAD | tar -t | grep -E '(^|/)(test|__tests__)/|\.test\.js$'` prints nothing
 - [ ] SKILL.md frontmatter complete (name, version, type, lifecycle, upgrade)
 - [ ] SKILL.md description includes trigger patterns (what + when to use)
 - [ ] SKILL.md body has concise usage examples only

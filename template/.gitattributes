@@ -1,0 +1,5 @@
+# Tests and fixtures are development-only. zylos installs components from the
+# GitHub source archive; export-ignore keeps them off user machines.
+/test export-ignore
+**/__tests__ export-ignore
+**/*.test.js export-ignore
