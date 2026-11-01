@@ -112,6 +112,28 @@ test('upgrade marker disables features without hiding the same package version',
   assert.equal(supportsCoreFeature('sessionGroup'), false);
 });
 
+test('disables features when upgrade marker state is unreadable', t => {
+  const fixture = coreFixture(t);
+  const directory = path.dirname(fixture.marker);
+  const mode = fs.statSync(directory).mode & 0o777;
+  assert.equal(supportsCoreFeature('sessionGroup'), true);
+  fs.chmodSync(directory, 0o000);
+  try {
+    let error;
+    try { fs.lstatSync(fixture.marker); } catch (cause) { error = cause; }
+    if (!error) {
+      t.skip('Directory permissions are bypassed by this runner');
+      return;
+    }
+    assert.equal(error.code, 'EACCES');
+    assert.equal(getCoreVersion(), '1.0.0-beta.1');
+    assert.equal(supportsCoreFeature('sessionGroup'), false);
+  } finally {
+    fs.chmodSync(directory, mode);
+  }
+  assert.equal(supportsCoreFeature('sessionGroup'), true);
+});
+
 test('uses the home default only when ZYLOS_DIR is absent', t => {
   const fixture = coreFixture(t);
   delete process.env.ZYLOS_DIR;
