@@ -8,21 +8,15 @@ const message = { source: 'channel', endpoint: 'chat', content: 'Quotes "\' $HOM
 const defaultArgs = ['--channel', message.source, '--endpoint', message.endpoint, '--json', '--content', message.content];
 
 for (const supported of [false, true]) {
-  for (const sessionGroup of [undefined, 'team']) {
-    test(`constructs arguments with ${sessionGroup === undefined ? 'no' : 'a'} group when support is ${supported}`, t => {
+  for (const [label, sessionGroup] of [['omitted', undefined], ['null', null], ['empty', ''], ['nonempty', 'team']]) {
+    test(`constructs arguments for a ${label} group when support is ${supported}`, t => {
       const fixture = c4Fixture(t);
       fixture.writeOptions(supported ? { '--session-group': { takesValue: true } } : {});
       assert.deepEqual(buildC4ReceiveArgs({ ...message, sessionGroup }),
-        supported && sessionGroup !== undefined ? [...defaultArgs, '--session-group', sessionGroup] : defaultArgs);
+        supported && label === 'nonempty' ? [...defaultArgs, '--session-group', 'team'] : defaultArgs);
     });
   }
 }
-
-test('a configured group named default is not the omitted default group', t => {
-  const fixture = c4Fixture(t);
-  fixture.writeOptions({ '--session-group': { takesValue: true } });
-  assert.deepEqual(buildC4ReceiveArgs({ ...message, sessionGroup: 'default' }), [...defaultArgs, '--session-group', 'default']);
-});
 
 test('subsequent argument construction observes manifest changes and removal', t => {
   const fixture = c4Fixture(t);

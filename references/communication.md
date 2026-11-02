@@ -12,7 +12,6 @@ Forward platform messages to Claude via C4:
 
 ```javascript
 import { execFile } from 'child_process';
-import { getConfig } from './lib/config.js';
 import { buildC4ReceiveArgs, getC4ReceivePath } from './lib/c4.js';
 
 function parseC4Response(stdout) {
@@ -26,10 +25,11 @@ function parseC4Response(stdout) {
  * @param {string} endpoint - Chat/channel ID for reply routing
  * @param {string} content - Formatted message string
  * @param {function} [onReject] - Callback when c4-receive rejects
+ * @param {string} [sessionGroup] - Group computed by the caller for this message
  */
-function sendToC4(source, endpoint, content, onReject) {
+function sendToC4(source, endpoint, content, onReject, sessionGroup) {
   const args = () => [getC4ReceivePath(), ...buildC4ReceiveArgs({
-    source, endpoint, content, sessionGroup: getConfig().settings?.session_group,
+    source, endpoint, content, sessionGroup,
   })];
 
   execFile(process.execPath, args(), { encoding: 'utf8' }, (error, stdout) => {
@@ -60,13 +60,12 @@ function sendToC4(source, endpoint, content, onReject) {
 
 ### C4 option compatibility
 
-The optional `settings.session_group` field in the component's data-directory
-`config.json` selects a local session group. Leave it absent for the default
-component namespace: no group value is supplied and `--session-group` is omitted.
-Do not add a default value to the config scaffold. The literal group name
-`default` is an ordinary non-default local group, not a reserved value.
+Each component computes a session group for each message using its own rules
+and passes it to `sendToC4` as the optional fifth argument. The template does
+not define grouping rules or add a configuration field. An omitted, null, or
+empty-string group selects the overall group and omits `--session-group`.
 
-`buildC4ReceiveArgs` appends `--session-group` only when a local group is configured
+`buildC4ReceiveArgs` appends `--session-group` only when the caller supplies a nonempty group
 and `c4ReceiveSupportsOption('--session-group')` returns true. Every call rereads
 `c4-receive-options.json` beside the script returned by `getC4ReceivePath()`:
 `<ZYLOS_DIR>/.claude/skills/comm-bridge/scripts/c4-receive.js`, with

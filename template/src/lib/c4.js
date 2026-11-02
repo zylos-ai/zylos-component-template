@@ -20,7 +20,7 @@ export function c4ReceiveSupportsOption(name) {
 
 export function buildC4ReceiveArgs({ source, endpoint, content, sessionGroup }) {
   const args = ['--channel', source, '--endpoint', endpoint, '--json', '--content', content];
-  if (sessionGroup !== undefined && c4ReceiveSupportsOption('--session-group')) {
+  if (sessionGroup != null && sessionGroup !== '' && c4ReceiveSupportsOption('--session-group')) {
     args.push('--session-group', sessionGroup);
   }
   return args;
