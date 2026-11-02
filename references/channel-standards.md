@@ -573,12 +573,12 @@ function handlePrivateMessage(ctx, messageType) {
     mediaPath
   });
 
-  sendToC4('channel-name', endpoint, msg, (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
     // 7. Cleanup on reject
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
     ctx.reply(errMsg).catch(() => {});
-  });
+  } });
 }
 ```
 
@@ -674,11 +674,11 @@ function handleGroupMessage(ctx, messageType) {
     smartHint: smartNoMention
   });
 
-  sendToC4('channel-name', endpoint, msg, (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
     sendMessage(chatId, errMsg, sendReplyOpts).catch(() => {});  // ← includes threadId
-  });
+  } });
 }
 ```
 

@@ -24,10 +24,11 @@ function parseC4Response(stdout) {
  * @param {string} source - Channel name, e.g. "discord"
  * @param {string} endpoint - Chat/channel ID for reply routing
  * @param {string} content - Formatted message string
- * @param {function} [onReject] - Callback when c4-receive rejects
- * @param {string} [sessionGroup] - Group computed by the caller for this message
+ * @param {object} [options] - Per-message options
+ * @param {function} [options.onReject] - Callback when c4-receive rejects
+ * @param {string} [options.sessionGroup] - Group computed by the caller for this message
  */
-function sendToC4(source, endpoint, content, onReject, sessionGroup) {
+function sendToC4(source, endpoint, content, { onReject, sessionGroup } = {}) {
   const args = () => [getC4ReceivePath(), ...buildC4ReceiveArgs({
     source, endpoint, content, sessionGroup,
   })];
@@ -61,7 +62,7 @@ function sendToC4(source, endpoint, content, onReject, sessionGroup) {
 ### C4 option compatibility
 
 Each component computes a session group for each message using its own rules
-and passes it to `sendToC4` as the optional fifth argument. The template does
+and passes it to `sendToC4` as the named `sessionGroup` option. The template does
 not define grouping rules or add a configuration field. An omitted, null, or
 empty-string group selects the overall group and omits `--session-group`.
 
@@ -123,9 +124,9 @@ function handleMessage(userId, username, chatId, text) {
   }
 
   const message = `[DISCORD DM] ${username} said: ${text}`;
-  sendToC4('discord', String(chatId), message, (errMsg) => {
+  sendToC4('discord', String(chatId), message, { onReject: (errMsg) => {
     replyToUser(chatId, errMsg);
-  });
+  } });
 }
 ```
 
