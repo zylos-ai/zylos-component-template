@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Core version detection and per-major feature thresholds, with fresh package reads and upgrade-marker protection for optional C4 session-group arguments.
+- Optional C4 session-group arguments gated by fresh reads of the option manifest beside the receiving script.
 
 ## [0.1.0] - {{DATE}}
 

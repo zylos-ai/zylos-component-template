@@ -12,12 +12,8 @@ Forward platform messages to Claude via C4:
 
 ```javascript
 import { execFile } from 'child_process';
-import path from 'path';
 import { getConfig } from './lib/config.js';
-import { buildC4ReceiveArgs } from './lib/c4.js';
-
-const C4_RECEIVE = path.join(process.env.ZYLOS_DIR || path.join(process.env.HOME, 'zylos'),
-  '.claude/skills/comm-bridge/scripts/c4-receive.js');
+import { buildC4ReceiveArgs, getC4ReceivePath } from './lib/c4.js';
 
 function parseC4Response(stdout) {
   if (!stdout) return null;
@@ -32,7 +28,7 @@ function parseC4Response(stdout) {
  * @param {function} [onReject] - Callback when c4-receive rejects
  */
 function sendToC4(source, endpoint, content, onReject) {
-  const args = () => [C4_RECEIVE, ...buildC4ReceiveArgs({
+  const args = () => [getC4ReceivePath(), ...buildC4ReceiveArgs({
     source, endpoint, content, sessionGroup: getConfig().settings?.session_group,
   })];
 
@@ -62,7 +58,7 @@ function sendToC4(source, endpoint, content, onReject) {
 }
 ```
 
-### Core feature compatibility
+### C4 option compatibility
 
 The optional `settings.session_group` field in the component's data-directory
 `config.json` selects a local session group. Leave it absent for the default
@@ -71,25 +67,23 @@ Do not add a default value to the config scaffold. The literal group name
 `default` is an ordinary non-default local group, not a reserved value.
 
 `buildC4ReceiveArgs` appends `--session-group` only when a local group is configured
-and `supportsCoreFeature('sessionGroup')` returns true. Its centralized threshold
-is `{ sessionGroup: { 1: '1.0.0-beta.1' } }`: Core `multi-session/base` at
-`76d4ac4f7536f9b86524ea973d8a84105a38b415` has that package version and its
-`c4-receive.js` parser recognizes this option. Thresholds are per major line;
-compare SemVer (including prereleases) within a listed line, support versions
-above every listed major, and reject all other versions or unknown features.
-Add a major-line entry when a feature is backported. Build metadata does not
-affect comparison.
+and `c4ReceiveSupportsOption('--session-group')` returns true. Every call rereads
+`c4-receive-options.json` beside the script returned by `getC4ReceivePath()`:
+`<ZYLOS_DIR>/.claude/skills/comm-bridge/scripts/c4-receive.js`, with
+`<HOME>/zylos` as the root when `ZYLOS_DIR` is unset or empty. Use that same
+function for the executed script, as in the example, so the manifest and script
+come from the same deployment.
 
-Every call resolves the first executable `zylos` on PATH through `realpath`, walks
-up to the package named `zylos`, and rereads its `package.json`. There is no cache,
-subprocess fallback, separate version file, or user-controlled feature switch.
-Unreadable or invalid SemVer versions mean unsupported. Before checking features,
-the helper checks `<ZYLOS_DIR>/.zylos/upgrade/active.json` (default root `~/zylos`):
-while that marker exists, every feature is unsupported even if the package version
-is new. `getCoreVersion()` still reports the package version during an upgrade.
-Both the initial send and its retry construct arguments afresh.
+The manifest has an `options` object, for example
+`{ "options": { "--channel": { "takesValue": true } } }`.
+Only an own key in that object declares support; the helper does not inspect
+the option's value. Missing or unreadable files, invalid JSON, and invalid shapes
+all mean unsupported. Older installations without a manifest omit optional
+arguments. The manifest and script are synchronized and rolled back together.
+Neither lookup nor argument construction caches support across calls, so both
+the initial send and its retry see the current manifest.
 
-New C4 options must have their own version threshold and be gated the same way.
+Gate future optional C4 arguments with the same manifest lookup.
 The example keeps its existing single retry after 2 seconds for transport errors,
 immediate `onReject` for structured rejections, and retry rejection callback;
 only command/argument construction changes to `execFile` with an argument array.
