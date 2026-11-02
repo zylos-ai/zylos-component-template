@@ -11,11 +11,8 @@ Communication components connect external platforms (Telegram, Lark, Discord, et
 Forward platform messages to Claude via C4:
 
 ```javascript
-import { exec } from 'child_process';
-import path from 'path';
-
-const C4_RECEIVE = path.join(process.env.HOME,
-  'zylos/.claude/skills/comm-bridge/scripts/c4-receive.js');
+import { execFile } from 'child_process';
+import { buildC4ReceiveArgs, getC4ReceivePath } from './lib/c4.js';
 
 function parseC4Response(stdout) {
   if (!stdout) return null;
@@ -27,13 +24,16 @@ function parseC4Response(stdout) {
  * @param {string} source - Channel name, e.g. "discord"
  * @param {string} endpoint - Chat/channel ID for reply routing
  * @param {string} content - Formatted message string
- * @param {function} [onReject] - Callback when c4-receive rejects
+ * @param {object} [options] - Per-message options
+ * @param {function} [options.onReject] - Callback when c4-receive rejects
+ * @param {string} [options.sessionGroup] - Group computed by the caller for this message
  */
-function sendToC4(source, endpoint, content, onReject) {
-  const safeContent = content.replace(/'/g, "'\\''");
-  const cmd = `node "${C4_RECEIVE}" --channel "${source}" --endpoint "${endpoint}" --json --content '${safeContent}'`;
+function sendToC4(source, endpoint, content, { onReject, sessionGroup } = {}) {
+  const args = () => [getC4ReceivePath(), ...buildC4ReceiveArgs({
+    source, endpoint, content, sessionGroup,
+  })];
 
-  exec(cmd, { encoding: 'utf8' }, (error, stdout) => {
+  execFile(process.execPath, args(), { encoding: 'utf8' }, (error, stdout) => {
     if (!error) {
       console.log(`[${source}] Sent to C4: ${content.substring(0, 50)}...`);
       return;
@@ -47,7 +47,7 @@ function sendToC4(source, endpoint, content, onReject) {
     // Retry once after 2s
     console.warn(`[${source}] C4 send failed, retrying: ${error.message}`);
     setTimeout(() => {
-      exec(cmd, { encoding: 'utf8' }, (retryError, retryStdout) => {
+      execFile(process.execPath, args(), { encoding: 'utf8' }, (retryError, retryStdout) => {
         if (!retryError) return;
         const retryResponse = parseC4Response(retryError.stdout || retryStdout);
         if (retryResponse?.ok === false && retryResponse.error?.message && onReject) {
@@ -58,6 +58,35 @@ function sendToC4(source, endpoint, content, onReject) {
   });
 }
 ```
+
+### C4 option compatibility
+
+Each component computes a session group for each message using its own rules
+and passes it to `sendToC4` as the named `sessionGroup` option. The template does
+not define grouping rules or add a configuration field. An omitted, null, or
+empty-string group selects the overall group and omits `--session-group`.
+
+`buildC4ReceiveArgs` appends `--session-group` only when the caller supplies a nonempty group
+and `c4ReceiveSupportsOption('--session-group')` returns true. Every call rereads
+`c4-receive-options.json` beside the script returned by `getC4ReceivePath()`:
+`<ZYLOS_DIR>/.claude/skills/comm-bridge/scripts/c4-receive.js`, with
+`<HOME>/zylos` as the root when `ZYLOS_DIR` is unset or empty. Use that same
+function for the executed script, as in the example, so the manifest and script
+come from the same deployment.
+
+The manifest has an `options` object, for example
+`{ "options": { "--channel": { "takesValue": true } } }`.
+Only an own key in that object declares support; the helper does not inspect
+the option's value. Missing or unreadable files, invalid JSON, and invalid shapes
+all mean unsupported. Older installations without a manifest omit optional
+arguments. The manifest and script are synchronized and rolled back together.
+Neither lookup nor argument construction caches support across calls, so both
+the initial send and its retry see the current manifest.
+
+Gate future optional C4 arguments with the same manifest lookup.
+The example keeps its existing single retry after 2 seconds for transport errors,
+immediate `onReject` for structured rejections, and retry rejection callback;
+only command/argument construction changes to `execFile` with an argument array.
 
 ## Message Format
 
@@ -95,9 +124,9 @@ function handleMessage(userId, username, chatId, text) {
   }
 
   const message = `[DISCORD DM] ${username} said: ${text}`;
-  sendToC4('discord', String(chatId), message, (errMsg) => {
+  sendToC4('discord', String(chatId), message, { onReject: (errMsg) => {
     replyToUser(chatId, errMsg);
-  });
+  } });
 }
 ```
 
