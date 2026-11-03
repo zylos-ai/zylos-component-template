@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Explicit test-file matching, helpers under `test/helpers/`, and development rules for test naming and discovery.
+
 ### Added
 - Caller-supplied per-message C4 session groups, omitted when absent or empty and gated by fresh reads of the option manifest beside the receiving script.
 

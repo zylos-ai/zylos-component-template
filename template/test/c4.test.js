@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import { buildC4ReceiveArgs } from '../src/lib/c4.js';
-import { c4Fixture } from './c4-fixture.js';
+import { c4Fixture } from './helpers/c4-fixture.js';
 
 const message = { source: 'channel', endpoint: 'chat', content: 'Quotes "\' $HOME `cmd`\nline' };
 const defaultArgs = ['--channel', message.source, '--endpoint', message.endpoint, '--json', '--content', message.content];
