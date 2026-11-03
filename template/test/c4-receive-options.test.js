@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { c4ReceiveSupportsOption, getC4ReceivePath } from '../src/lib/c4.js';
-import { c4Fixture } from './c4-fixture.js';
+import { c4Fixture } from './helpers/c4-fixture.js';
 
 test('missing manifest means unsupported', t => {
   c4Fixture(t);

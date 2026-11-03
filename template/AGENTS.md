@@ -37,7 +37,13 @@ negative controls intact — a gate that cannot fail proves nothing.
 
 ## Testing
 
-- `npm test` runs `node --test` over `test/*.test.js`
+- All test files must end in `.test.js`. Put helper scripts and fixtures in
+  `test/helpers/` or `test/fixtures/`, without the `.test.js` suffix
+- `npm test` and other test commands must explicitly match test files. The
+  scaffold uses `node --test test/*.test.js` (shell expansion, compatible with
+  Node.js 20). Extend the matching rules to cover subdirectories when adding
+  nested tests. Do not rely on bare `node --test` discovery: it also runs helper
+  `.js` files under `test/` as tests
 - The release-consistency gate (above) ships with the scaffold and must stay
 - When a test guards specific logic, prove it can fail: temporarily break the
   guarded behavior (a known-bad mutant), confirm the test goes red, restore it
