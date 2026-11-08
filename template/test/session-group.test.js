@@ -26,6 +26,12 @@ test('CLI requires exactly one endpoint argument', () => {
   }
 });
 
-// Replace with this platform's mapping table: every conversation type maps to a
-// stable, Core-valid name, and invalid endpoints throw (CLI exit 1).
+test('CLI failure exits 1 with nothing on stdout, never as empty output', () => {
+  assert.throws(() => execFileSync(process.execPath, [script, ''], { stdio: 'pipe' }),
+    err => err.status === 1 && err.stdout.toString() === '' && /Error:/.test(err.stderr.toString()));
+});
+
+// Replace with this platform's mapping table: every conversation type maps to its
+// group ('' for the overall group, otherwise isValidSessionGroup), and invalid
+// endpoints throw (CLI exit 1).
 test.todo('maps each conversation type to its session group');

@@ -404,7 +404,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
 - [ ] (communication) scripts/send.js sends text and media
 - [ ] (communication) Messages forwarded to C4 in correct format
-- [ ] (communication) `sessionGroupFromEndpoint` implemented with a mapping test; `scripts/session-group.js <endpoint>` prints the same group the receiver sends (see references/communication.md "Session groups")
+- [ ] (communication) `sessionGroupFromEndpoint` implemented with a mapping test; `scripts/session-group.js <endpoint>` prints the same group the receiver sends (see references/communication.md "Session Groups")
 
 ## Reference Implementations
 

@@ -2,7 +2,8 @@
 /**
  * Print the session group for a reply endpoint (communication components).
  * Usage: node scripts/session-group.js <endpoint>
- * Success: group name on stdout, exit 0. Invalid input: message on stderr, exit 1.
+ * Success: group name on stdout, exit 0; empty output means the overall group.
+ * Failure: message on stderr, nothing on stdout, exit 1.
  */
 import { sessionGroupFromEndpoint } from '../src/lib/session-group.js';
 
@@ -12,7 +13,8 @@ if (args.length !== 1) {
   process.exit(1);
 }
 try {
-  process.stdout.write(`${sessionGroupFromEndpoint(args[0])}\n`);
+  const group = sessionGroupFromEndpoint(args[0]);
+  if (group) process.stdout.write(`${group}\n`);
 } catch (err) {
   console.error(`Error: ${err.message}`);
   process.exit(1);

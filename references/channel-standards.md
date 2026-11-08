@@ -737,7 +737,6 @@ export function historyKeyToLogFile(historyKey) {
 2. **Single log file for all threads** — cross-thread context leaks; users in Topic A see messages from Topic B
 3. **Typing indicator in wrong thread** — `sendChatAction` without `message_thread_id` shows typing in the general channel
 4. **Thread ID is optional** — even in forum groups, some system messages have no `thread_id`. Always use `|| null`, never assume present
-   Conversely, a thread ID alone does not make a topic: split session groups only on the platform's explicit topic marker (see communication.md "Session Groups")
 5. **Smart mode per-thread** — a forum group might want smart mode in some topics. The config check should accept `threadId` as a parameter for future per-topic override
 
 ### 11.5 Smart Mode Logic
@@ -890,7 +889,7 @@ const msg = formatMessage({
 - [ ] Body assembled with `Buffer.concat().toString('utf8')`
 - [ ] Internal port read from config, not hardcoded
 - [ ] onReject clears typing + reaction; sends the component's own notice (never Core's error text), nothing when Core already stored the message
-- [ ] Session group derived only from endpoint ids, Core-valid by construction, covered by a mapping test; `scripts/session-group.js` matches the receiver
+- [ ] Session groups meet the Core contract (communication.md "Session Groups"): valid names, one-to-one, covered by a mapping test; `scripts/session-group.js` matches the receiver and fails with exit 1, never empty output
 - [ ] A rejected session group is never dropped and resent to the overall group
 - [ ] Optional platform fields have fallback values
 - [ ] @mention detection uses structured entities
