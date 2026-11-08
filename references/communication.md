@@ -81,7 +81,7 @@ Each component computes a session group for each message and passes it to
 Each component decides its own partitioning (which conversations get their own
 group and which use the overall group); the template prescribes none, ships no
 grouping algorithm and adds no configuration field. It only states the Core
-contract every mapping must meet (M7 §3.2, §9). An omitted, null, or
+contract every mapping must meet. An omitted, null, or
 empty-string group selects the overall group and omits `--session-group`.
 
 `buildC4ReceiveArgs` appends `--session-group` only when the caller supplies a nonempty group
@@ -116,7 +116,8 @@ Messages sent without a group go to the component's overall group.
 
 ### Core contract (required)
 
-From M7 §3.2 and §9:
+Source of truth: zylos-core (1.0 and later) `skills/comm-bridge/scripts/c4-session-group.js`
+and `skills/comm-bridge/references/c4-receive.md`.
 
 1. **Syntax.** A nonempty name is at most 95 characters and matches
    `^[A-Za-z0-9][A-Za-z0-9_.:-]*$` (case-sensitive). Core does not convert
@@ -126,17 +127,16 @@ From M7 §3.2 and §9:
 2. **One-to-one.** When platform ids are too long or contain other characters
    (for example WeChat `xxx@chatroom`), map them to compliant values that still
    identify each conversation uniquely: replace characters reversibly, or use a
-   short id the component stores locally. Never truncate or hash into names
-   that can collide.
+   short id the component stores locally. Never truncate or hash.
 3. **Lookup matches the receiver.** `scripts/session-group.js <endpoint>` must
    print the group the receiver sends for messages from that endpoint. Success:
    the name on stdout and exit 0; empty output with exit 0 means the overall
    group. Failure (invalid endpoint, unknown conversation): message on stderr,
    nothing on stdout, exit 1. A failure must never look like empty output:
    callers such as the scheduler would file the task under the overall group.
-4. **Changing the partitioning needs a migration.** Once live, a rule change
-   moves existing conversations into new groups; do it only through Core's
-   explicit migration (M7 §3.2.1).
+4. **Names are fixed once live.** A rule change moves existing conversations
+   into new groups, and Core currently has no migration tool. Changing the
+   partitioning must be planned together with Core as an explicit migration.
 
 ### Partitioning (each component decides)
 
@@ -166,7 +166,8 @@ try {
   sessionGroup = sessionGroupFromEndpoint(endpoint);
 } catch (err) {
   console.error(`[discord] no session group for ${endpoint}: ${err.message}`);
-  return onReject(TRY_LATER);
+  if (onReject) onReject(TRY_LATER);
+  return;
 }
 sendToC4('discord', endpoint, message, { onReject, sessionGroup });
 ```

@@ -4,9 +4,10 @@
  * The component decides which conversations get their own session group and
  * which use the overall group (empty string). Whatever the partitioning, it must
  * meet the Core contract in zylos-component-template references/communication.md
- * "Session Groups" (M7 §3.2, §9): Core-valid names, one-to-one with
- * conversations, `scripts/session-group.js <endpoint>` matching the receiver,
- * and changes only through Core's migration. Core prefixes the component
+ * "Session Groups": Core-valid names, one-to-one with conversations, and
+ * `scripts/session-group.js <endpoint>` matching the receiver. Names are fixed
+ * once live: Core has no migration tool, so changing the partitioning must be
+ * planned with Core. Core prefixes the component
  * namespace; never add it here.
  */
 
