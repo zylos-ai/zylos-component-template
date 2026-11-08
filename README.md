@@ -51,6 +51,7 @@ template/
   src/index.js            Entry point with graceful shutdown
   src/lib/config.js       Config loader with hot-reload
   scripts/send.js         Outbound message interface (communication)
+  scripts/session-group.js  Endpoint → session group lookup (communication)
   hooks/                  Lifecycle hooks (install, upgrade)
   SKILL.md                Component metadata for Zylos CLI
   ecosystem.config.cjs    PM2 service config

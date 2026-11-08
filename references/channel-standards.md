@@ -416,12 +416,16 @@ They start together and must stop together in ALL paths:
 
 **Every onReject callback must:**
 ```javascript
-onReject: (errMsg) => {
+onReject: (notice) => {
   stopTypingIndicator(correlationId);
   clearReaction(chatId, messageId);
-  sendErrorReply(chatId, errMsg, threadId);
+  // null: Core already stored the message, so send nothing
+  if (notice) sendErrorReply(chatId, notice, threadId);
 }
 ```
+
+`notice` is the component's own user-facing text, never Core's error message
+(see communication.md "Session Groups").
 
 ### 8.2 clearReaction Must Use the Shared API Helper
 
@@ -573,11 +577,11 @@ function handlePrivateMessage(ctx, messageType) {
     mediaPath
   });
 
-  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (notice) => {
     // 7. Cleanup on reject
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
-    ctx.reply(errMsg).catch(() => {});
+    if (notice) ctx.reply(notice).catch(() => {});
   } });
 }
 ```
@@ -674,10 +678,10 @@ function handleGroupMessage(ctx, messageType) {
     smartHint: smartNoMention
   });
 
-  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (notice) => {
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
-    sendMessage(chatId, errMsg, sendReplyOpts).catch(() => {});  // ← includes threadId
+    if (notice) sendMessage(chatId, notice, sendReplyOpts).catch(() => {});  // ← includes threadId
   } });
 }
 ```
@@ -733,6 +737,7 @@ export function historyKeyToLogFile(historyKey) {
 2. **Single log file for all threads** — cross-thread context leaks; users in Topic A see messages from Topic B
 3. **Typing indicator in wrong thread** — `sendChatAction` without `message_thread_id` shows typing in the general channel
 4. **Thread ID is optional** — even in forum groups, some system messages have no `thread_id`. Always use `|| null`, never assume present
+   Conversely, a thread ID alone does not make a topic: split session groups only on the platform's explicit topic marker (see communication.md "Session Groups")
 5. **Smart mode per-thread** — a forum group might want smart mode in some topics. The config check should accept `threadId` as a parameter for future per-topic override
 
 ### 11.5 Smart Mode Logic
@@ -884,7 +889,9 @@ const msg = formatMessage({
 - [ ] Internal endpoint uses dedicated secret, bound to localhost
 - [ ] Body assembled with `Buffer.concat().toString('utf8')`
 - [ ] Internal port read from config, not hardcoded
-- [ ] onReject clears typing + reaction + sends error reply
+- [ ] onReject clears typing + reaction; sends the component's own notice (never Core's error text), nothing when Core already stored the message
+- [ ] Session group derived only from endpoint ids, Core-valid by construction, covered by a mapping test; `scripts/session-group.js` matches the receiver
+- [ ] A rejected session group is never dropped and resent to the overall group
 - [ ] Optional platform fields have fallback values
 - [ ] @mention detection uses structured entities
 - [ ] replaceBotMention handles both text and caption

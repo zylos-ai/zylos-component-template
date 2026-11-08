@@ -49,6 +49,7 @@ template/
   src/index.js            入口文件，支持优雅退出
   src/lib/config.js       配置加载器，支持热更新
   scripts/send.js         出站消息接口（通讯类组件）
+  scripts/session-group.js  由 endpoint 查会话分组（通讯类组件）
   hooks/                  生命周期钩子（安装、升级）
   SKILL.md                组件元数据（Zylos CLI 读取）
   ecosystem.config.cjs    PM2 服务配置

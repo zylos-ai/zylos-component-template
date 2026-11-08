@@ -48,10 +48,10 @@ find . -type f -exec sed -i "s|{{COMPONENT_DESCRIPTION}}|$DESC|g" {} \;
 find . -type f -exec sed -i "s|{{COMPONENT_TYPE}}|$TYPE|g" {} \;
 find . -type f -exec sed -i "s|{{DATE}}|$DATE|g" {} \;
 
-# Remove send.js for non-communication components
+# Remove messaging files for non-communication components
 if [ "$TYPE" != "communication" ]; then
-  rm -rf scripts/send.js
-  echo "  - Removed scripts/send.js (not a communication component)"
+  rm -f scripts/send.js scripts/session-group.js src/lib/session-group.js test/session-group.test.js
+  echo "  - Removed send.js and session-group files (not a communication component)"
 fi
 
 # Initialize git

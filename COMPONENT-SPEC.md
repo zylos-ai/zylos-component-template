@@ -38,7 +38,8 @@ This document defines the development specification for Zylos components, based 
 ├── docs/                 # Development and design documents, not agent-facing runtime context
 │   └── DESIGN.md         # Architecture/design notes for maintainers and reviews
 ├── scripts/
-│   └── send.js           # C4 send interface (communication only)
+│   ├── send.js           # C4 send interface (communication only)
+│   └── session-group.js  # Endpoint → session group lookup (communication only)
 ├── hooks/                # Lifecycle hooks
 │   ├── post-install.js   # Post-install hook
 │   ├── pre-upgrade.js    # Pre-upgrade hook
@@ -46,7 +47,9 @@ This document defines the development specification for Zylos components, based 
 ├── src/                  # Source code
 │   ├── index.js          # Main entry point
 │   └── lib/              # Module directory
-│       └── config.js     # Config loader
+│       ├── config.js     # Config loader
+│       ├── c4.js         # C4 receive arguments and option gating
+│       └── session-group.js  # Session-group mapping (communication only)
 └── test/                 # Tests, helpers, fixtures (development-only, never installed)
 ```
 

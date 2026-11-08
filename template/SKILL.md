@@ -59,3 +59,19 @@ dependencies: []
 ```
 
 Run `node ~/zylos/.claude/skills/{{COMPONENT_NAME}}/scripts/<script>.js --help` for all options.
+
+<!-- Communication components: document session groups (delete for other types).
+
+## Session Groups (multi-session Core)
+
+| Conversation | Session group | Example |
+|---|---|---|
+| Private chat | `dm-<id>` | `dm-12345` |
+| Group | `group-<chat id>` | `group-67890` |
+
+Look up the group for a reply endpoint (exits 1 on an invalid endpoint):
+
+```bash
+node ~/zylos/.claude/skills/{{COMPONENT_NAME}}/scripts/session-group.js "<endpoint>"
+```
+-->
