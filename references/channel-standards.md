@@ -416,12 +416,16 @@ They start together and must stop together in ALL paths:
 
 **Every onReject callback must:**
 ```javascript
-onReject: (errMsg) => {
+onReject: (notice) => {
   stopTypingIndicator(correlationId);
   clearReaction(chatId, messageId);
-  sendErrorReply(chatId, errMsg, threadId);
+  // null: Core already stored the message, so send nothing
+  if (notice) sendErrorReply(chatId, notice, threadId);
 }
 ```
+
+`notice` is the component's own user-facing text, never Core's error message
+(see communication.md "Session Groups").
 
 ### 8.2 clearReaction Must Use the Shared API Helper
 
@@ -573,11 +577,11 @@ function handlePrivateMessage(ctx, messageType) {
     mediaPath
   });
 
-  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (notice) => {
     // 7. Cleanup on reject
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
-    ctx.reply(errMsg).catch(() => {});
+    if (notice) ctx.reply(notice).catch(() => {});
   } });
 }
 ```
@@ -674,10 +678,10 @@ function handleGroupMessage(ctx, messageType) {
     smartHint: smartNoMention
   });
 
-  sendToC4('channel-name', endpoint, msg, { onReject: (errMsg) => {
+  sendToC4('channel-name', endpoint, msg, { onReject: (notice) => {
     stopTypingIndicator(correlationId);
     clearReaction(chatId, messageId);
-    sendMessage(chatId, errMsg, sendReplyOpts).catch(() => {});  // ← includes threadId
+    if (notice) sendMessage(chatId, notice, sendReplyOpts).catch(() => {});  // ← includes threadId
   } });
 }
 ```
@@ -884,7 +888,9 @@ const msg = formatMessage({
 - [ ] Internal endpoint uses dedicated secret, bound to localhost
 - [ ] Body assembled with `Buffer.concat().toString('utf8')`
 - [ ] Internal port read from config, not hardcoded
-- [ ] onReject clears typing + reaction + sends error reply
+- [ ] onReject clears typing + reaction; sends the component's own notice (never Core's error text), nothing when Core already stored the message
+- [ ] Session groups meet the Core contract (communication.md "Session Groups"): valid names, one-to-one, covered by a mapping test; `scripts/session-group.js` matches the receiver and fails with exit 1, never empty output
+- [ ] A rejected session group is never dropped and resent to the overall group
 - [ ] Optional platform fields have fallback values
 - [ ] @mention detection uses structured entities
 - [ ] replaceBotMention handles both text and caption
