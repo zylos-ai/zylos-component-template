@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Caller-supplied per-message C4 session groups, omitted when absent or empty and gated by fresh reads of the option manifest beside the receiving script.
 - `src/lib/session-group.js` mapping stub with Core's name limits, and `scripts/session-group.js <endpoint>` to look up a reply endpoint's session group.
+- `src/lib/format.js`: `formatMessage()` and `escapeXml()` for inbound C4 content, in the zylos-lark / zylos-telegram layout, with tests.
 
 ## [0.1.0] - {{DATE}}
 

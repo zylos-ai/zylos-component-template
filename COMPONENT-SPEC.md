@@ -49,6 +49,7 @@ This document defines the development specification for Zylos components, based 
 │   └── lib/              # Module directory
 │       ├── config.js     # Config loader
 │       ├── c4.js         # C4 receive arguments and option gating
+│       ├── format.js     # Inbound message assembly (communication only)
 │       └── session-group.js  # Session-group mapping (communication only)
 └── test/                 # Tests, helpers, fixtures (development-only, never installed)
 ```
@@ -490,13 +491,18 @@ node scripts/send.js <endpoint_id> "<message>"
 
 ### 7.2 Message Format
 
-**Receiving (External → Claude)**:
+**Receiving (External → Claude)**: built by `formatMessage()` in
+`src/lib/format.js`; full convention in
+[references/channel-standards.md 11.6](./references/channel-standards.md#116-message-format-convention-c4-protocol).
 ```
-[<SOURCE> <TYPE>] <username> said: <message>
+[TG GROUP:Dev Team]
+<group-context>
+[alice]: earlier message
+</group-context>
 
-# Examples
-[TG DM] howardzhou said: Hello
-[TG GROUP:Dev Team] howardzhou said: @bot please check
+<current-message>
+howardzhou said: @bot please check
+</current-message>
 ```
 
 **Sending (Claude → External)**:

@@ -86,7 +86,7 @@ find . -type f -exec sed -i "s|{{COMPONENT_NAME}}|$NAME|g" {} \;
 ### Step 4: Handle Component Type
 
 - **communication**: Keep all files as-is
-- **capability / utility**: Delete `scripts/send.js`, `scripts/session-group.js`, `src/lib/session-group.js` and `test/session-group.test.js`
+- **capability / utility**: Delete `scripts/send.js`, `scripts/session-group.js`, `src/lib/session-group.js`, `test/session-group.test.js`, `src/lib/format.js` and `test/format.test.js`
 
 ### Step 5: Implement Component Logic
 
@@ -403,7 +403,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] (HTTP) WebSocket/SSE endpoints authenticate every connection, keep secrets out of URLs, send heartbeats, clean up on disconnect; WebSocket handshakes check the browser origin explicitly (not `Origin` == `Host`) and reject before upgrading
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
 - [ ] (communication) scripts/send.js sends text and media
-- [ ] (communication) Messages forwarded to C4 in correct format
+- [ ] (communication) Messages forwarded to C4 via `formatMessage()` (channel-standards.md 11.6), `CHANNEL_TAG` set
 - [ ] (communication) `sessionGroupFromEndpoint` implemented with a mapping test; `scripts/session-group.js <endpoint>` prints the same group the receiver sends (see references/communication.md "Session Groups")
 
 ## Reference Implementations

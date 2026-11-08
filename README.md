@@ -50,6 +50,7 @@ cd zylos-component-template
 template/
   src/index.js            Entry point with graceful shutdown
   src/lib/config.js       Config loader with hot-reload
+  src/lib/format.js       Inbound message assembly (communication)
   scripts/send.js         Outbound message interface (communication)
   scripts/session-group.js  Endpoint → session group lookup (communication)
   hooks/                  Lifecycle hooks (install, upgrade)

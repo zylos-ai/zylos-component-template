@@ -48,6 +48,7 @@ cd zylos-component-template
 template/
   src/index.js            入口文件，支持优雅退出
   src/lib/config.js       配置加载器，支持热更新
+  src/lib/format.js       入站消息组装（通讯类组件）
   scripts/send.js         出站消息接口（通讯类组件）
   scripts/session-group.js  由 endpoint 查会话分组（通讯类组件）
   hooks/                  生命周期钩子（安装、升级）

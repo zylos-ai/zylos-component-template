@@ -53,15 +53,10 @@ fs.writeFileSync(filePath, buffer);
 
 User text embedded in `<current-message>`, `<group-context>`, etc. can inject fake XML tags.
 
-**Rule:** All user-controlled strings must pass through `escapeXml()`:
-```javascript
-export function escapeXml(text) {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/'/g, '&apos;').replace(/"/g, '&quot;');
-}
-```
+**Rule:** All user-controlled strings must pass through `escapeXml()` from the
+template's `src/lib/format.js` (escapes `& < > ' "`; null/undefined become an
+empty string, other values are converted with `String()`). `formatMessage()`
+already applies it to every field.
 
 Apply to: message body, username, group name, file path, caption — everything from the platform API.
 
@@ -667,7 +662,7 @@ function handleGroupMessage(ctx, messageType) {
   if (!smartNoMention) startTypingIndicator(chatId, correlationId, threadId);
 
   const msg = formatMessage({
-    chatType: ctx.chat.type,
+    chatType: ctx.chat.type === 'private' ? 'private' : 'group',  // map the platform's DM type
     groupName,
     userName,
     text: cleanText,
@@ -755,19 +750,11 @@ Message In ──► isSmartGroup? ──► Yes ──► @mentioned?
                                         response  + [SKIP] option
 ```
 
-**Template for smart hint in formatMessage:**
-```javascript
-if (smartHint) {
-  parts.push(`<smart-mode>
-Decide whether to respond. Do NOT reply if: the message is unrelated to you,
-just casual chat, or doesn't need your input. Only reply when:
-1) someone asks a question you can help with,
-2) discussing technical topics you know well,
-3) someone clearly needs assistance.
-When uncertain, prefer NOT to reply. Reply with exactly [SKIP] to stay silent.
-</smart-mode>`);
-}
-```
+**Smart hint:** `formatMessage({ ..., smartHint: true })` adds the
+`<smart-mode>` block with the standard hint text shown in 11.6. It asks Claude
+to stay silent unless it can genuinely help, to prefer not replying when
+uncertain, and to reply `[SKIP]` to stay silent. The text is part of the spec;
+change it only as a spec change.
 
 **send.js must handle [SKIP]:**
 ```javascript
@@ -788,17 +775,53 @@ if (text.trim() === '[SKIP]') {
 
 ### 11.6 Message Format Convention (C4 Protocol)
 
-All channels must format messages consistently for C4:
+This section is the authoritative description of the content a channel passes
+to c4-receive. The template implements it in `src/lib/format.js`
+(`formatMessage`, `escapeXml`, tests in `test/format.test.js`). zylos-lark and
+zylos-telegram use the same block structure. The template's fallbacks follow
+zylos-lark and its call signature follows zylos-telegram. The smart-mode text
+below is the standard; neither component uses it yet (alignment tracked in
+zylos-telegram#77 and zylos-lark#110).
 
 ```
-[CHANNEL_TAG] userName said: <context>...</context><current-message>...</current-message> ---- file: /path
-                                                                                          ---- reply via: node send.js "endpoint"
+[TG GROUP:Dev Team]
+<group-context>
+[alice]: previous message 1
+[bob]: previous message 2
+</group-context>
+
+<replying-to>
+[bob]: quoted message content
+</replying-to>
+
+<smart-mode>
+Decide whether to respond. Do NOT reply if: the message is unrelated to you, just casual chat, or doesn't need your input. Only reply when: 1) someone asks a question you can help with, 2) the discussion is on a topic you can substantially help with, 3) someone clearly needs assistance. When uncertain, prefer NOT to reply. Reply with exactly [SKIP] to stay silent.
+</smart-mode>
+
+<current-message>
+carol said: the actual message text
+</current-message> ---- file: /path/to/attachment.png
 ```
 
-**Tag format by chat type:**
+C4 appends the reply route when it delivers the message; components do not add it.
+
+**Source line** (always first, on its own line):
 - Private: `[TG DM]`, `[Lark DM]`, `[Discord DM]`
-- Group: `[TG GROUP:groupName]`, `[Lark GROUP:groupName]`
-- The tag tells Claude where the message came from
+- Group: `[TG GROUP:<group name>]`, `[Lark GROUP:<group name>]`
+
+**Blocks, in this order, each followed by a blank line:**
+- `<group-context>` or `<thread-context>` (optional): recent history, one
+  `[sender]: text` line each, oldest first. In a thread, wrap the thread's
+  first message in `<thread-root>`.
+- `<replying-to>` (optional): the message being replied to. Leave it out when it
+  only repeats the thread root already shown in `<thread-context>`.
+- `<smart-mode>` (optional): only for smart-mode group messages without a mention.
+- `<current-message>` (always, always last): `<sender> said: <text>` inside the tag.
+- ` ---- file: <path>` (optional): appended after `</current-message>` for a
+  downloaded attachment.
+
+All platform-supplied strings (text, sender and group names, quoted text, file
+path) pass through `escapeXml()` (see 1.3).
 
 **Endpoint format (structured):**
 ```
@@ -810,32 +833,6 @@ chatId|msg:messageId|req:correlationId|thread:threadId
 - `thread`: thread/topic ID (for reply routing)
 - All fields after chatId are optional key:value pairs
 - `send.js` parses this with `parseEndpoint()`
-
-**XML structure in message body:**
-```xml
-[CHANNEL TAG] userName said: <group-context>
-[alice]: previous message 1
-[bob]: previous message 2
-</group-context>
-
-<replying-to>
-[originalSender]: quoted message content
-</replying-to>
-
-<smart-mode>
-... evaluation instructions ...
-</smart-mode>
-
-<current-message>
-The actual message text goes here
-</current-message>
-```
-
-- `<group-context>` or `<thread-context>`: recent history (from `getHistory()`)
-- `<replying-to>`: reply/quote context (if user replied to a specific message)
-- `<smart-mode>`: only present when `smartHint: true`
-- `<current-message>`: always present, always last
-- All user-controlled content inside tags must be `escapeXml()`'d
 
 ### 11.7 Media Handling Matrix
 
@@ -854,6 +851,7 @@ Different chat types handle media differently:
 // Include file_id so Claude can request download later if needed
 const photoInfo = `[photo, file_id: ${fileId}, msg_id: ${messageId}]`;
 const msg = formatMessage({
+  chatType: 'group', groupName, userName,
   text: caption ? `${caption}\n${photoInfo}` : `[sent a photo]\n${photoInfo}`,
   mediaPath: null,  // no download
   smartHint: true

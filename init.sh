@@ -50,8 +50,9 @@ find . -type f -exec sed -i "s|{{DATE}}|$DATE|g" {} \;
 
 # Remove messaging files for non-communication components
 if [ "$TYPE" != "communication" ]; then
-  rm -f scripts/send.js scripts/session-group.js src/lib/session-group.js test/session-group.test.js
-  echo "  - Removed send.js and session-group files (not a communication component)"
+  rm -f scripts/send.js scripts/session-group.js src/lib/session-group.js test/session-group.test.js \
+    src/lib/format.js test/format.test.js
+  echo "  - Removed send.js, format.js and session-group files (not a communication component)"
 fi
 
 # Initialize git
