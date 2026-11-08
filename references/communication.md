@@ -202,20 +202,25 @@ Reference implementation: zylos-telegram v0.5.0 (`src/lib/session-group.js`,
 
 ## Message Format
 
-Messages to C4 must follow this format:
+Build the content with `formatMessage()` from `src/lib/format.js`; the full
+convention is in [channel-standards.md 11.6](./channel-standards.md#116-message-format-convention-c4-protocol).
 
 ```
-# Private messages
-[DISCORD DM] alice said: Hello!
+# Private message
+[Discord DM]
+<current-message>
+alice said: Hello!
+</current-message>
 
-# Group messages
-[DISCORD GROUP:dev-chat] bob said: @bot check this
-
-# With file attachments
-[DISCORD DM] alice said: Look at this ---- file: /path/to/file.png
+# Group message with an attachment
+[Discord GROUP:dev-chat]
+<current-message>
+bob said: @bot check this
+</current-message> ---- file: /path/to/file.png
 ```
 
-The `reply via:` path is automatically appended by C4.
+Set `CHANNEL_TAG` in `src/lib/format.js` to the platform's short label. The
+reply route is appended by C4 when it delivers the message.
 
 ## Owner Binding
 
@@ -235,7 +240,7 @@ function handleMessage(userId, username, chatId, text) {
     return;  // Reply: "Sorry, this bot is private."
   }
 
-  const message = `[DISCORD DM] ${username} said: ${text}`;
+  const message = formatMessage({ chatType: 'private', userName: username, text });
   sendToC4('discord', String(chatId), message, { onReject: (notice) => {
     if (notice) replyToUser(chatId, notice);
   } });
@@ -249,11 +254,10 @@ Log all group messages, include recent context when @mentioned:
 ```javascript
 logMessage(chatId, { username, text, timestamp });
 
-const recentMessages = getGroupContext(chatId);
-const contextPrefix = recentMessages.length > 0
-  ? `[Recent context]\n${recentMessages.map(m => `${m.user}: ${m.text}`).join('\n')}\n[Current message]\n`
-  : '';
-const message = `[DISCORD GROUP:${groupName}] ${username} said: ${contextPrefix}${text}`;
+const message = formatMessage({
+  chatType: 'group', groupName, userName: username, text,
+  contextMessages: getGroupContext(chatId),  // [{ user_name, text }], oldest first
+});
 sendToC4('discord', String(chatId), message);
 ```
 
