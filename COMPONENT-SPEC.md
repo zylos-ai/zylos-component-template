@@ -442,8 +442,8 @@ console.log('[post-upgrade] Complete!');
 
 ### 5.6 Session-start context injection (shards.d)
 
-Written for the current Core `multi-session/prerelease` branch
-(`1.0.0-beta.9`). Core 0.9.6 also supports `shards.d` and the 5,500 ms emit cap,
+Written for **Zylos Core 1.0.0 and later**, including the 1.0 prerelease line.
+Core 0.9.6 also supports `shards.d` and the 5,500 ms emit cap,
 but migration behavior, the built-in shard count and hook synchronization paths
 differ. For 0.9.6, consult the corresponding version of the Core documentation.
 
@@ -465,8 +465,7 @@ Register component context in `~/zylos/.zylos/shards.d/<name>.json`:
 When replacing a legacy SessionStart hook with a shard, the component's own
 `post-upgrade` must remove its exact old command from **both**
 `<ZYLOS_DIR>/.claude/settings.json` and `<ZYLOS_DIR>/.codex/hooks.json`, even if
-only one runtime is currently active. Keep recoverable copies through the
-component's upgrade backup. Preserve unrelated hooks, events, matcher groups
+only one runtime is currently active. Preserve unrelated hooks, events, matcher groups
 and group metadata. For example:
 
 ```js
