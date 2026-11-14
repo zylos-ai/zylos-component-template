@@ -442,9 +442,9 @@ console.log('[post-upgrade] Complete!');
 
 ### 5.6 Session-start context injection (shards.d)
 
-Written for **Zylos Core 1.0.0 and later**, including the 1.0 prerelease line.
-Core 0.9.6 also supports `shards.d`, the 5,500 ms emit cap and `claimHooks`,
-but details such as the built-in shard count and hook synchronization paths
+Written for the current Core `multi-session/prerelease` branch
+(`1.0.0-beta.9`). Core 0.9.6 also supports `shards.d` and the 5,500 ms emit cap,
+but migration behavior, the built-in shard count and hook synchronization paths
 differ. For 0.9.6, consult the corresponding version of the Core documentation.
 
 - **Keep emission within 5,500 ms.** This fixed core emit cap cannot be extended by a declaration; `budget` limits output size, not execution time.
@@ -458,12 +458,58 @@ Register component context in `~/zylos/.zylos/shards.d/<name>.json`:
   "name": "my-component",
   "order": 10,
   "emitter": "skills/my-component/scripts/emit-context.js",
-  "budget": { "maxChars": 10000, "maxTokens": 2200 },
-  "claimHooks": ["skills/my-component/scripts/legacy-session-start.js"]
+  "budget": { "maxChars": 10000, "maxTokens": 2200 }
 }
 ```
 
-After installing, updating, or removing the declaration, run hook synchronization and check that the generated hooks contain `--shard <name>` (or no longer contain it after removal).
+When replacing a legacy SessionStart hook with a shard, the component's own
+`post-upgrade` must remove its exact old command from **both**
+`<ZYLOS_DIR>/.claude/settings.json` and `<ZYLOS_DIR>/.codex/hooks.json`, even if
+only one runtime is currently active. Keep recoverable copies through the
+component's upgrade backup. Preserve unrelated hooks, events, matcher groups
+and group metadata. For example:
+
+```js
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+const root = process.env.ZYLOS_DIR || path.join(os.homedir(), 'zylos');
+// Use the exact command this component previously installed, including quoting.
+const legacyCommand = `node "${path.join(root, '.claude/skills/my-component/scripts/legacy-session-start.js')}"`;
+
+for (const relative of ['.claude/settings.json', '.codex/hooks.json']) {
+  const file = path.join(root, relative);
+  if (!fs.existsSync(file)) continue;
+  const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (!Array.isArray(config.hooks?.SessionStart)) continue;
+  let changed = false;
+  config.hooks.SessionStart = config.hooks.SessionStart.map(group => {
+    if (!Array.isArray(group?.hooks)) return group;
+    const hooks = group.hooks.filter(hook =>
+      !(hook?.type === 'command' && hook.command === legacyCommand));
+    if (hooks.length === group.hooks.length) return group;
+    changed = true;
+    return { ...group, hooks };
+  });
+  if (changed) fs.writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`);
+}
+```
+
+Use the exact historical command, including quoting; if the runtimes installed
+different commands, match each file's command separately. The example is
+idempotent: missing files and already-migrated commands are no-ops; JSON and
+filesystem errors fail the hook. It retains empty groups and writes only changed
+files. Do not remove a whole group or match a command by path substring.
+
+After this cleanup and after installing, updating, or removing the declaration,
+run the installed Core's hook synchronization and check that generated hooks
+contain `--shard <name>` (or no longer contain it after removal). See the Core
+reference below for the command, its installed-package path, and restart effects.
+Core preserves component and user hooks on both runtimes. Old declarations with
+`claimHooks` still load if otherwise valid, but Core ignores that field and emits
+a session-start warning: it no longer removes legacy hooks on the component's
+behalf.
 
 See the authoritative Core [session-start shard reference](https://github.com/zylos-ai/zylos-core/blob/multi-session/prerelease/skills/activity-monitor/references/session-start-shards.md) for validation, synchronization and restart behavior in both session modes, runtime differences, diagnostics, and lifecycle details.
 
