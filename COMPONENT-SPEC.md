@@ -440,11 +440,12 @@ if (fs.existsSync(configPath)) {
 console.log('[post-upgrade] Complete!');
 ```
 
----
-
 ### 5.6 Session-start context injection (shards.d)
 
-Applies to **Zylos Core 1.0.0 and later**, including the 1.0 prerelease line; these instructions do not apply to 0.9.6.
+Written for **Zylos Core 1.0.0 and later**, including the 1.0 prerelease line.
+Core 0.9.6 also supports `shards.d`, the 5,500 ms emit cap and `claimHooks`,
+but details such as the built-in shard count and hook synchronization paths
+differ. For 0.9.6, consult the corresponding version of the Core documentation.
 
 - **Keep emission within 5,500 ms.** This fixed core emit cap cannot be extended by a declaration; `budget` limits output size, not execution time.
 - **Slow shards affect startup.** They can delay the first response, and later context or the startup prompt can overtake them when predecessor waits expire.
@@ -465,6 +466,8 @@ Register component context in `~/zylos/.zylos/shards.d/<name>.json`:
 After installing, updating, or removing the declaration, run hook synchronization and check that the generated hooks contain `--shard <name>` (or no longer contain it after removal).
 
 See the authoritative Core [session-start shard reference](https://github.com/zylos-ai/zylos-core/blob/multi-session/prerelease/skills/activity-monitor/references/session-start-shards.md) for validation, synchronization and restart behavior in both session modes, runtime differences, diagnostics, and lifecycle details.
+
+---
 
 ## 6. Configuration Specification
 
