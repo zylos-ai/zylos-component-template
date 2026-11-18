@@ -637,8 +637,17 @@ function handleGroupMessage(ctx, messageType) {
 
   if (!shouldRespond) return;
 
-  // Gate 5: Sender auth (owner bypasses allowFrom)
-  if (!senderIsOwner && !isSenderAllowed(config, chatId, ctx.from.id)) return;
+  // Gate 5: Sender auth (owner bypasses allowFrom).
+  // A disallowed sender gets one short denial only when they @mention the bot;
+  // anything else from them stays silent (smart mode must not deny ordinary chatter).
+  if (!senderIsOwner && !isSenderAllowed(config, chatId, ctx.from.id)) {
+    if (mentioned) {
+      const denyOpts = threadId ? { message_thread_id: threadId } : {};
+      sendMessage(chatId, "Sorry, you don't have permission to interact with me in this group.", denyOpts)
+        .catch(() => {});
+    }
+    return;
+  }
 
   // Gate 6: Log owner messages from non-allowed groups only when responding
   if (!isAllowed && senderIsOwner) {
@@ -687,6 +696,7 @@ function handleGroupMessage(ctx, messageType) {
 - `threadId` in ALL replies including error replies
 - Smart mode sends `smartHint` so Claude can decide to respond or `[SKIP]`
 - Owner bypasses `allowFrom` but NOT `disabled` policy
+- A sender rejected by `allowFrom` gets a denial reply only when they explicitly @mention the bot (in the same thread); unmentioned messages from them — including in smart mode — produce no reply, reaction or C4 dispatch
 
 ### 11.4 Thread / Forum Topic Flow
 
