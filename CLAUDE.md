@@ -402,6 +402,7 @@ console.log(`${LOG_PREFIX} post-upgrade complete.`);
 - [ ] (HTTP) Every response carries `X-Robots-Tag: noindex, nofollow`; HTML (incl. error pages) has robots meta; `/robots.txt` disallows all — unless explicitly declared public-indexable
 - [ ] (HTTP) WebSocket/SSE endpoints authenticate every connection, keep secrets out of URLs, send heartbeats, clean up on disconnect; WebSocket handshakes check the browser origin explicitly (not `Origin` == `Host`) and reject before upgrading
 - [ ] PM2 can manage the service (`pm2 start ecosystem.config.cjs`)
+- [ ] Notices to the agent follow [references/agent-notifications.md](./references/agent-notifications.md): ordinary message if it should feed Memory Sync, otherwise a control; every `c4-control.js enqueue` passes `--group` (the session the control relates to) whenever config has `session_mode`
 - [ ] (communication) scripts/send.js sends text and media
 - [ ] (communication) Messages forwarded to C4 via `formatMessage()` (channel-standards.md 11.6), `CHANNEL_TAG` set
 - [ ] (communication) `sessionGroupFromEndpoint` implemented with a mapping test; `scripts/session-group.js <endpoint>` prints the same group the receiver sends (see references/communication.md "Session Groups")
